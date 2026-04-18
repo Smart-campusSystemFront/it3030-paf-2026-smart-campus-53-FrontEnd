@@ -91,6 +91,10 @@ export default function Login() {
           </a>
 
           <p className="text-xs text-slate-500">
+            If you use Google for this account, sign in with <strong>Continue with Google</strong> — password login
+            only works after you set a password or register with email.
+          </p>
+          <p className="text-xs text-slate-500">
             Backend CORS allows <code className="rounded bg-slate-100 px-1">http://localhost:5173</code>. If your API is
             not running on <code className="rounded bg-slate-100 px-1">http://localhost:8080</code>, set{' '}
             <code className="rounded bg-slate-100 px-1">VITE_API_BASE_URL</code>.

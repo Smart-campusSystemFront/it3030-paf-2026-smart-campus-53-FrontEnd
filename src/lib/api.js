@@ -18,13 +18,22 @@ async function parseJsonSafe(res) {
   }
 }
 
+function shouldAttachAuth(path) {
+  // Avoid sending a stale JWT on credential endpoints — can confuse debugging and some setups.
+  if (!path) return true
+  const p = path.replace(/^\//, '')
+  if (p.startsWith('api/auth/login') || p.startsWith('api/auth/register')) return false
+  return true
+}
+
 export async function apiRequest(path, { method, body, headers } = {}) {
   const token = getToken()
+  const attachAuth = shouldAttachAuth(path)
   const res = await fetch(joinUrl(API_BASE_URL, path), {
     method: method || (body ? 'POST' : 'GET'),
     headers: {
       ...(body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(token && attachAuth ? { Authorization: `Bearer ${token}` } : {}),
       ...(headers || {}),
     },
     body: body
