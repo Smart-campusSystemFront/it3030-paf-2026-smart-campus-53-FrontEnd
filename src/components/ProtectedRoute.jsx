@@ -7,8 +7,19 @@ export default function ProtectedRoute({ children, requireRole }) {
 
   if (loading) {
     return (
-      <div className="min-h-[40vh] grid place-items-center text-slate-600">
-        Loading...
+      <div
+        style={{
+          minHeight: '50vh',
+          display: 'grid',
+          placeItems: 'center',
+          flexDirection: 'column',
+          gap: 16,
+        }}
+      >
+        <div className="sc-spinner" />
+        <p style={{ marginTop: 16, fontSize: 13, color: 'var(--text-muted)', fontWeight: 500 }}>
+          Verifying your session…
+        </p>
       </div>
     )
   }
@@ -23,4 +34,3 @@ export default function ProtectedRoute({ children, requireRole }) {
 
   return children
 }
-

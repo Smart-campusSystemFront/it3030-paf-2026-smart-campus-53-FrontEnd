@@ -16,14 +16,8 @@ export default function OAuthCallback() {
   useEffect(() => {
     const token = getParam('token')
     const err = getParam('error')
-    if (err) {
-      setError(err)
-      return
-    }
-    if (!token) {
-      setError('Missing token')
-      return
-    }
+    if (err) { setError(err); return }
+    if (!token) { setError('Missing token'); return }
     ;(async () => {
       try {
         await acceptOAuthToken(token)
@@ -35,23 +29,35 @@ export default function OAuthCallback() {
   }, [acceptOAuthToken, nav])
 
   return (
-    <div className="mx-auto max-w-md">
-      <Card>
-        <CardHeader title="Signing you in..." subtitle="Finishing Google OAuth login" />
-        <CardBody className="grid gap-3">
-          {error ? (
-            <>
-              <Alert tone="error">{error}</Alert>
-              <Link className="text-sm font-semibold text-indigo-600 hover:text-indigo-700" to="/login">
-                Back to login
-              </Link>
-            </>
-          ) : (
-            <p className="text-sm text-slate-600">Please wait.</p>
-          )}
-        </CardBody>
-      </Card>
+    <div style={{ display: 'grid', placeItems: 'center', minHeight: 'calc(100vh - 60px)', padding: 24 }}>
+      <div style={{ width: '100%', maxWidth: 400 }} className="animate-fade-up">
+        <Card>
+          <CardHeader
+            title="Signing you in…"
+            subtitle="Completing Google OAuth login"
+          />
+          <CardBody>
+            {error ? (
+              <div style={{ display: 'grid', gap: 14 }}>
+                <Alert tone="error">{error}</Alert>
+                <Link
+                  to="/login"
+                  style={{ fontSize: 13, fontWeight: 600, color: 'var(--c-blue)', textDecoration: 'none' }}
+                >
+                  ← Back to login
+                </Link>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div className="sc-spinner" style={{ width: 24, height: 24, borderWidth: 2 }} />
+                <p style={{ margin: 0, fontSize: 14, color: 'var(--text-secondary)' }}>
+                  Please wait, authenticating…
+                </p>
+              </div>
+            )}
+          </CardBody>
+        </Card>
+      </div>
     </div>
   )
 }
-

@@ -1,10 +1,38 @@
-import { useEffect, useMemo, useState } from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPlus, faRotateRight, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  App,
+  Breadcrumb,
+  Button,
+  Card,
+  Flex,
+  Form,
+  Input,
+  Modal,
+  Popconfirm,
+  Select,
+  Space,
+  Switch,
+  Table,
+  Tag,
+  Typography,
+} from 'antd'
+import {
+  DeleteOutlined,
+  PlusOutlined,
+  ReloadOutlined,
+  SearchOutlined,
+  UserOutlined,
+} from '@ant-design/icons'
+import { Link } from 'react-router-dom'
 import { apiRequest } from '../lib/api.js'
-import { Alert, Button, Card, CardBody, CardHeader, Input, Select } from '../components/ui.jsx'
 
 const ROLES = ['USER', 'ADMIN', 'TECHNICIAN']
+
+const roleTagColor = {
+  ADMIN: 'red',
+  USER: 'blue',
+  TECHNICIAN: 'green',
+}
 
 function fmtDate(s) {
   if (!s) return '—'
@@ -14,36 +42,30 @@ function fmtDate(s) {
 }
 
 export default function AdminUsers() {
+  const { message } = App.useApp()
+  const [form] = Form.useForm()
+
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
-  const [status, setStatus] = useState(null)
-
-  const [q, setQ] = useState('')
-
-  const [createOpen, setCreateOpen] = useState(false)
-  const [cEmail, setCEmail] = useState('')
-  const [cFirst, setCFirst] = useState('')
-  const [cLast, setCLast] = useState('')
-  const [cPassword, setCPassword] = useState('')
-  const [cRole, setCRole] = useState('USER')
   const [busy, setBusy] = useState(false)
+  const [q, setQ] = useState('')
+  const [modalOpen, setModalOpen] = useState(false)
 
-  async function load() {
-    setStatus(null)
+  const load = useCallback(async () => {
     setLoading(true)
     try {
       const list = await apiRequest('/api/users')
       setUsers(Array.isArray(list) ? list : [])
     } catch (err) {
-      setStatus({ tone: 'error', msg: err?.message || 'Failed to load users' })
+      message.error(err?.message || 'Failed to load users')
     } finally {
       setLoading(false)
     }
-  }
+  }, [message])
 
   useEffect(() => {
     load()
-  }, [])
+  }, [load])
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase()
@@ -54,208 +76,271 @@ export default function AdminUsers() {
     })
   }, [q, users])
 
-  async function onCreate(e) {
-    e.preventDefault()
-    setStatus(null)
-    setBusy(true)
+  const onUpdate = useCallback(
+    async (u, patch) => {
+      setBusy(true)
+      try {
+        await apiRequest(`/api/users/${u.id}`, { method: 'PUT', body: patch })
+        await load()
+        message.success('User updated')
+      } catch (err) {
+        message.error(err?.message || 'Update failed')
+      } finally {
+        setBusy(false)
+      }
+    },
+    [load, message],
+  )
+
+  const onDelete = useCallback(
+    async (u) => {
+      setBusy(true)
+      try {
+        await apiRequest(`/api/users/${u.id}`, { method: 'DELETE' })
+        await load()
+        message.success('User deleted')
+      } catch (err) {
+        message.error(err?.message || 'Delete failed')
+      } finally {
+        setBusy(false)
+      }
+    },
+    [load, message],
+  )
+
+  const openCreate = () => {
+    form.resetFields()
+    setModalOpen(true)
+  }
+
+  const submitCreate = async () => {
     try {
+      const values = await form.validateFields()
+      setBusy(true)
       await apiRequest('/api/users', {
         method: 'POST',
         body: {
-          email: cEmail,
-          firstName: cFirst,
-          lastName: cLast,
-          password: cPassword,
-          role: cRole,
+          email: values.email,
+          firstName: values.firstName,
+          lastName: values.lastName,
+          password: values.password,
+          role: values.role,
         },
       })
-      setCreateOpen(false)
-      setCEmail('')
-      setCFirst('')
-      setCLast('')
-      setCPassword('')
-      setCRole('USER')
+      message.success('User created')
+      setModalOpen(false)
+      form.resetFields()
       await load()
-      setStatus({ tone: 'success', msg: 'User created' })
     } catch (err) {
-      setStatus({ tone: 'error', msg: err?.message || 'Create failed' })
+      if (err?.errorFields) return
+      message.error(err?.message || 'Create failed')
     } finally {
       setBusy(false)
     }
   }
 
-  async function onUpdate(u, patch) {
-    setStatus(null)
-    setBusy(true)
-    try {
-      await apiRequest(`/api/users/${u.id}`, { method: 'PUT', body: patch })
-      await load()
-      setStatus({ tone: 'success', msg: 'User updated' })
-    } catch (err) {
-      setStatus({ tone: 'error', msg: err?.message || 'Update failed' })
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  async function onDelete(u) {
-    if (!confirm(`Delete user ${u.email}?`)) return
-    setStatus(null)
-    setBusy(true)
-    try {
-      await apiRequest(`/api/users/${u.id}`, { method: 'DELETE' })
-      await load()
-      setStatus({ tone: 'success', msg: 'User deleted' })
-    } catch (err) {
-      setStatus({ tone: 'error', msg: err?.message || 'Delete failed' })
-    } finally {
-      setBusy(false)
-    }
-  }
+  const columns = useMemo(
+    () => [
+      {
+        title: 'ID',
+        dataIndex: 'id',
+        key: 'id',
+        width: 72,
+        fixed: 'left',
+      },
+      {
+        title: 'Email',
+        dataIndex: 'email',
+        key: 'email',
+        ellipsis: true,
+      },
+      {
+        title: 'Name',
+        key: 'name',
+        ellipsis: true,
+        render: (_, u) => (
+          <span>
+            {u.firstName} {u.lastName}
+          </span>
+        ),
+      },
+      {
+        title: 'Role',
+        dataIndex: 'role',
+        key: 'role',
+        width: 160,
+        render: (role, u) => (
+          <Select
+            value={role}
+            disabled={busy}
+            style={{ width: '100%', minWidth: 120 }}
+            options={ROLES.map((r) => ({ label: r, value: r }))}
+            onChange={(value) => onUpdate(u, { role: value })}
+            popupMatchSelectWidth={false}
+            labelRender={({ value: v }) => (
+              <Tag color={roleTagColor[v] || 'default'} style={{ margin: 0 }}>
+                {v}
+              </Tag>
+            )}
+          />
+        ),
+      },
+      {
+        title: 'Active',
+        dataIndex: 'active',
+        key: 'active',
+        width: 100,
+        render: (active, u) => (
+          <Switch
+            checked={!!active}
+            disabled={busy}
+            onChange={(checked) => onUpdate(u, { active: checked })}
+          />
+        ),
+      },
+      {
+        title: 'Provider',
+        dataIndex: 'provider',
+        key: 'provider',
+        width: 110,
+        ellipsis: true,
+        render: (p) => p || '—',
+      },
+      {
+        title: 'Created',
+        dataIndex: 'createdAt',
+        key: 'createdAt',
+        width: 180,
+        render: (d) => <Typography.Text type="secondary">{fmtDate(d)}</Typography.Text>,
+      },
+      {
+        title: 'Actions',
+        key: 'actions',
+        width: 100,
+        fixed: 'right',
+        render: (_, u) => (
+          <Popconfirm
+            title="Delete user"
+            description={`Remove ${u.email}? This cannot be undone.`}
+            okText="Delete"
+            okType="danger"
+            okButtonProps={{ loading: busy }}
+            onConfirm={() => onDelete(u)}
+          >
+            <Button danger type="link" size="small" icon={<DeleteOutlined />} disabled={busy}>
+              Delete
+            </Button>
+          </Popconfirm>
+        ),
+      },
+    ],
+    [busy, onDelete, onUpdate],
+  )
 
   return (
-    <div className="grid gap-6">
-      <Card>
-        <CardHeader
-          title="User management"
-          subtitle="Admin-only endpoints: list, create, update role/active, delete"
-          right={
-            <div className="flex items-center gap-2">
-              <Button variant="secondary" type="button" onClick={load} disabled={busy}>
-                <FontAwesomeIcon icon={faRotateRight} />
-                Refresh
-              </Button>
-              <Button type="button" onClick={() => setCreateOpen((v) => !v)} disabled={busy}>
-                <FontAwesomeIcon icon={faPlus} />
-                New user
-              </Button>
-            </div>
-          }
+    <Space direction="vertical" size="large" style={{ width: '100%' }}>
+      <Breadcrumb
+        items={[
+          { title: <Link to="/admin/overview">Admin</Link> },
+          { title: <><UserOutlined /> Users</> },
+        ]}
+      />
+
+      <Flex justify="space-between" align="flex-start" wrap="wrap" gap={16}>
+        <div>
+          <Typography.Title level={3} style={{ margin: 0 }}>
+            User management
+          </Typography.Title>
+          <Typography.Paragraph type="secondary" style={{ marginBottom: 0, maxWidth: 520 }}>
+            List, create, and update accounts. Role and active status save immediately; delete is confirmed.
+          </Typography.Paragraph>
+        </div>
+        <Space wrap>
+          <Button icon={<ReloadOutlined />} onClick={load} loading={loading} disabled={busy}>
+            Refresh
+          </Button>
+          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate} disabled={busy}>
+            New user
+          </Button>
+        </Space>
+      </Flex>
+
+      <Card styles={{ body: { padding: 0 } }}>
+        <div style={{ padding: 16, borderBottom: '1px solid var(--ant-color-border-secondary, #f0f0f0)' }}>
+          <Input
+            allowClear
+            size="large"
+            placeholder="Search by id, name, email, role, or provider"
+            prefix={<SearchOutlined style={{ color: 'rgba(0,0,0,.45)' }} />}
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
+        </div>
+        <Table
+          rowKey="id"
+          loading={loading}
+          dataSource={filtered}
+          columns={columns}
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: true,
+            showTotal: (total, range) => `${range[0]}-${range[1]} of ${total}`,
+          }}
+          scroll={{ x: 1100 }}
+          size="middle"
         />
-        <CardBody className="grid gap-4">
-          {status ? <Alert tone={status.tone}>{status.msg}</Alert> : null}
-
-          {createOpen ? (
-            <form onSubmit={onCreate} className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <Input label="Email" type="email" value={cEmail} onChange={(e) => setCEmail(e.target.value)} required />
-                <Select label="Role" value={cRole} onChange={(e) => setCRole(e.target.value)}>
-                  {ROLES.map((r) => (
-                    <option key={r} value={r}>
-                      {r}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <Input label="First name" value={cFirst} onChange={(e) => setCFirst(e.target.value)} required />
-                <Input label="Last name" value={cLast} onChange={(e) => setCLast(e.target.value)} required />
-              </div>
-              <Input
-                label="Password (required)"
-                type="password"
-                value={cPassword}
-                onChange={(e) => setCPassword(e.target.value)}
-                required
-                minLength={8}
-              />
-              <div className="flex flex-wrap gap-2">
-                <Button type="submit" disabled={busy}>
-                  Create
-                </Button>
-                <Button type="button" variant="secondary" onClick={() => setCreateOpen(false)} disabled={busy}>
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          ) : null}
-
-          <div className="grid gap-3">
-            <Input
-              label="Search"
-              placeholder="Search by name/email/role/provider"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-            />
-          </div>
-
-          <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
-            <table className="min-w-[900px] w-full text-left text-sm">
-              <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-600">
-                <tr>
-                  <th className="px-4 py-3">ID</th>
-                  <th className="px-4 py-3">Email</th>
-                  <th className="px-4 py-3">Name</th>
-                  <th className="px-4 py-3">Role</th>
-                  <th className="px-4 py-3">Active</th>
-                  <th className="px-4 py-3">Provider</th>
-                  <th className="px-4 py-3">Created</th>
-                  <th className="px-4 py-3">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200">
-                {loading ? (
-                  <tr>
-                    <td className="px-4 py-4 text-slate-600" colSpan={8}>
-                      Loading...
-                    </td>
-                  </tr>
-                ) : filtered.length ? (
-                  filtered.map((u) => (
-                    <tr key={u.id} className="hover:bg-slate-50">
-                      <td className="px-4 py-3 font-medium">{u.id}</td>
-                      <td className="px-4 py-3">{u.email}</td>
-                      <td className="px-4 py-3">
-                        {u.firstName} {u.lastName}
-                      </td>
-                      <td className="px-4 py-3">
-                        <Select
-                          value={u.role}
-                          onChange={(e) => onUpdate(u, { role: e.target.value })}
-                          className="min-w-40"
-                          disabled={busy}
-                        >
-                          {ROLES.map((r) => (
-                            <option key={r} value={r}>
-                              {r}
-                            </option>
-                          ))}
-                        </Select>
-                      </td>
-                      <td className="px-4 py-3">
-                        <label className="inline-flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={!!u.active}
-                            onChange={(e) => onUpdate(u, { active: e.target.checked })}
-                            disabled={busy}
-                          />
-                          <span className="text-slate-700">{u.active ? 'Yes' : 'No'}</span>
-                        </label>
-                      </td>
-                      <td className="px-4 py-3">{u.provider || '—'}</td>
-                      <td className="px-4 py-3 text-slate-600">{fmtDate(u.createdAt)}</td>
-                      <td className="px-4 py-3">
-                        <Button variant="danger" type="button" onClick={() => onDelete(u)} disabled={busy}>
-                          <FontAwesomeIcon icon={faTrash} />
-                          Delete
-                        </Button>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td className="px-4 py-4 text-slate-600" colSpan={8}>
-                      No users found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </CardBody>
       </Card>
-    </div>
+
+      <Modal
+        title="Create user"
+        open={modalOpen}
+        onCancel={() => setModalOpen(false)}
+        onOk={submitCreate}
+        okText="Create"
+        confirmLoading={busy}
+        destroyOnHidden
+        width={520}
+      >
+        <Form form={form} layout="vertical" requiredMark="optional" style={{ marginTop: 8 }}>
+          <Form.Item
+            name="email"
+            label="Email"
+            rules={[
+              { required: true, message: 'Email is required' },
+              { type: 'email', message: 'Enter a valid email' },
+            ]}
+          >
+            <Input placeholder="name@example.com" autoComplete="off" />
+          </Form.Item>
+          <Form.Item name="role" label="Role" initialValue="USER" rules={[{ required: true }]}>
+            <Select options={ROLES.map((r) => ({ label: r, value: r }))} />
+          </Form.Item>
+          <Form.Item
+            name="firstName"
+            label="First name"
+            rules={[{ required: true, message: 'Required' }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="lastName"
+            label="Last name"
+            rules={[{ required: true, message: 'Required' }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="password"
+            label="Password"
+            rules={[
+              { required: true, message: 'Password is required' },
+              { min: 8, message: 'At least 8 characters' },
+            ]}
+          >
+            <Input.Password placeholder="Minimum 8 characters" autoComplete="new-password" />
+          </Form.Item>
+        </Form>
+      </Modal>
+    </Space>
   )
 }
-

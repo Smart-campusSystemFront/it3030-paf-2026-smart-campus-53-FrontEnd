@@ -2,10 +2,15 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext.jsx'
 import Layout from './components/Layout.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
+import UserDashboardLayout from './components/UserDashboardLayout.jsx'
+import AdminDashboardLayout from './components/AdminDashboardLayout.jsx'
 import Login from './pages/Login.jsx'
 import Register from './pages/Register.jsx'
 import OAuthCallback from './pages/OAuthCallback.jsx'
-import Dashboard from './pages/Dashboard.jsx'
+import UserDashboardOverview from './pages/dashboard/Overview.jsx'
+import UserTickets from './pages/dashboard/Tickets.jsx'
+import AdminOverview from './pages/admin/Overview.jsx'
+import AdminTickets from './pages/admin/Tickets.jsx'
 import Profile from './pages/Profile.jsx'
 import AdminUsers from './pages/AdminUsers.jsx'
 
@@ -30,10 +35,13 @@ function App() {
               path="/dashboard"
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <UserDashboardLayout />
                 </ProtectedRoute>
               }
-            />
+            >
+              <Route index element={<UserDashboardOverview />} />
+              <Route path="tickets" element={<UserTickets />} />
+            </Route>
             <Route
               path="/profile"
               element={
@@ -43,13 +51,18 @@ function App() {
               }
             />
             <Route
-              path="/admin/users"
+              path="/admin"
               element={
                 <ProtectedRoute requireRole="ADMIN">
-                  <AdminUsers />
+                  <AdminDashboardLayout />
                 </ProtectedRoute>
               }
-            />
+            >
+              <Route index element={<Navigate to="overview" replace />} />
+              <Route path="overview" element={<AdminOverview />} />
+              <Route path="users" element={<AdminUsers />} />
+              <Route path="tickets" element={<AdminTickets />} />
+            </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>

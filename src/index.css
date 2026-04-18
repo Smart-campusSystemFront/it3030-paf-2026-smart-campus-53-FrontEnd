@@ -1,11 +1,190 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
 
-html,
-body,
-#root {
+/* ─────────────────────────────────────────────
+   DESIGN TOKENS
+───────────────────────────────────────────── */
+:root {
+  /* Brand palette */
+  --c-navy:      #00205B;   /* deep navy – primary brand */
+  --c-blue:      #0091FF;   /* electric blue – accent / CTA */
+  --c-amber:     #F9BF3B;   /* amber gold – highlight / badge */
+  --c-slate-dk:  #343E43;   /* dark slate – headings / dark bg */
+  --c-slate-lt:  #C9CEDC;   /* light slate – borders / muted text */
+
+  /* Derived shades */
+  --c-navy-80:   #1a3a6e;
+  --c-navy-60:   #2d548a;
+  --c-blue-light:#e6f4ff;
+  --c-amber-light:#fffbeb;
+
+  /* Surfaces */
+  --bg-page:    #f0f4f8;
+  --bg-card:    #ffffff;
+  --bg-sidebar: #001845;   /* ultra-deep navy for sidebar */
+
+  /* Text */
+  --text-primary:   #0d1b2a;
+  --text-secondary: #4a5568;
+  --text-muted:     #8896a7;
+
+  /* Borders */
+  --border:     #dde3ed;
+  --border-strong: #c2cad8;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px 0 rgb(0 32 91 / .08), 0 1px 2px -1px rgb(0 32 91 / .06);
+  --shadow-md: 0 4px 16px 0 rgb(0 32 91 / .10), 0 2px 6px -2px rgb(0 32 91 / .06);
+  --shadow-lg: 0 12px 40px 0 rgb(0 32 91 / .14), 0 4px 16px -4px rgb(0 32 91 / .08);
+  --shadow-glow: 0 0 0 3px rgb(0 145 255 / .18);
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+
+  /* Transitions */
+  --ease: cubic-bezier(.25, .46, .45, .94);
+  --duration: 180ms;
+}
+
+/* ─────────────────────────────────────────────
+   RESET & BASE
+───────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body, #root {
   height: 100%;
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 body {
   margin: 0;
+  background: var(--bg-page);
+  color: var(--text-primary);
+}
+
+/* ─────────────────────────────────────────────
+   CUSTOM SCROLLBAR
+───────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--c-slate-lt);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--c-blue); }
+
+/* ─────────────────────────────────────────────
+   ANIMATIONS
+───────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes pulse-ring {
+  0%   { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.animate-fade-up  { animation: fadeUp  0.35s var(--ease) both; }
+.animate-fade-in  { animation: fadeIn  0.25s var(--ease) both; }
+
+/* ─────────────────────────────────────────────
+   GLASS MORPHISM HELPER
+───────────────────────────────────────────── */
+.glass {
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.5);
+}
+
+/* ─────────────────────────────────────────────
+   BRANDED GRADIENT BACKGROUNDS
+───────────────────────────────────────────── */
+.gradient-navy {
+  background: linear-gradient(135deg, var(--c-navy) 0%, var(--c-navy-60) 100%);
+}
+.gradient-blue {
+  background: linear-gradient(135deg, var(--c-blue) 0%, #0070d1 100%);
+}
+.gradient-amber {
+  background: linear-gradient(135deg, var(--c-amber) 0%, #f59e0b 100%);
+}
+
+/* ─────────────────────────────────────────────
+   ANTD OVERRIDES  (scoped via data-theme)
+───────────────────────────────────────────── */
+
+/* Sidebar menu items */
+.ant-menu-item-selected {
+  background: linear-gradient(90deg, rgba(0,145,255,.15), rgba(0,145,255,.05)) !important;
+  border-right: 3px solid var(--c-blue) !important;
+}
+.ant-menu-item-selected .ant-menu-title-content,
+.ant-menu-item-selected .anticon {
+  color: var(--c-blue) !important;
+  font-weight: 600 !important;
+}
+.ant-menu-item:hover:not(.ant-menu-item-selected) {
+  background: rgba(0,145,255,.06) !important;
+}
+
+/* Table rows hover */
+.ant-table-tbody > tr:hover > td {
+  background: var(--c-blue-light) !important;
+}
+
+/* Card borders */
+.ant-card {
+  border-color: var(--border) !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: box-shadow var(--duration) var(--ease) !important;
+}
+.ant-card:hover {
+  box-shadow: var(--shadow-md) !important;
+}
+
+/* Primary buttons */
+.ant-btn-primary {
+  background: linear-gradient(135deg, var(--c-blue), #0070d1) !important;
+  border-color: transparent !important;
+  font-weight: 600 !important;
+}
+.ant-btn-primary:hover {
+  background: linear-gradient(135deg, #0080e6, #0060b8) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgb(0 145 255 / .35) !important;
+}
+
+/* Tags */
+.ant-tag {
+  border-radius: 6px !important;
+  font-weight: 500 !important;
+  font-size: 11px !important;
+  letter-spacing: .3px !important;
+}
+
+/* ─────────────────────────────────────────────
+   LOADING SPINNER  (used in ProtectedRoute)
+───────────────────────────────────────────── */
+.sc-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--c-blue-light);
+  border-top-color: var(--c-blue);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
 }
