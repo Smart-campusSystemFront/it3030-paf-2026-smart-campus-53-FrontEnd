@@ -1,6 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUsers, faTicket, faArrowRight } from '@fortawesome/free-solid-svg-icons'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext.jsx'
 
 const MODULE_CARDS = [
   {
@@ -28,6 +29,9 @@ const MODULE_CARDS = [
 ]
 
 export default function AdminOverview() {
+  const { user } = useAuth()
+  const visibleCards = user?.role === 'ADMIN' ? MODULE_CARDS : MODULE_CARDS.filter(c => c.to !== '/admin/users')
+
   return (
     <div style={{ display: 'grid', gap: 24 }}>
 
@@ -57,14 +61,14 @@ export default function AdminOverview() {
             borderRadius: 6, padding: '3px 10px', marginBottom: 12,
           }}>
             <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--c-amber)', letterSpacing: '1px', textTransform: 'uppercase' }}>
-              Admin Control Panel
+              {user?.role === 'ADMIN' ? 'Admin Control Panel' : 'Tech Control Panel'}
             </span>
           </div>
           <h2 style={{ margin: '0 0 6px', fontSize: 26, fontWeight: 800, color: '#fff', fontFamily: "'Plus Jakarta Sans',sans-serif", letterSpacing: '-0.4px' }}>
-            Admin Overview
+            {user?.role === 'ADMIN' ? 'Admin Overview' : 'Tech Overview'}
           </h2>
           <p style={{ margin: 0, fontSize: 14, color: 'rgba(201,206,220,0.75)' }}>
-            Manage campus operations — users, resources, tickets, and system settings
+            Manage campus operations — {user?.role === 'ADMIN' ? 'users, resources, tickets, and system settings' : 'tickets and related tasks'}
           </p>
         </div>
       </div>
@@ -75,7 +79,7 @@ export default function AdminOverview() {
           Modules
         </h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 16 }}>
-          {MODULE_CARDS.map(({ to, icon, color, bg, border, title, description, stat, statColor }) => (
+          {visibleCards.map(({ to, icon, color, bg, border, title, description, stat, statColor }) => (
             <Link
               key={to}
               to={to}

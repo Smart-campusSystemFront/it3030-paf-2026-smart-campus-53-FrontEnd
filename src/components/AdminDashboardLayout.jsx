@@ -6,10 +6,12 @@ import {
   SettingOutlined,
 } from '@ant-design/icons'
 import { Link, Outlet, useLocation } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext.jsx'
 
 const { Sider, Content } = Layout
 
 export default function AdminDashboardLayout() {
+  const { user } = useAuth()
   const { pathname } = useLocation()
   const selectedKeys = (() => {
     if (pathname.startsWith('/admin/users'))   return ['users']
@@ -58,7 +60,7 @@ export default function AdminDashboardLayout() {
           >
             <SettingOutlined style={{ color: 'var(--c-amber)', fontSize: 10 }} />
             <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--c-amber)', letterSpacing: '1px', textTransform: 'uppercase' }}>
-              ADMIN
+              {user?.role === 'ADMIN' ? 'ADMIN' : 'TECHNICIAN'}
             </span>
           </div>
           <div
@@ -98,11 +100,11 @@ export default function AdminDashboardLayout() {
               icon: <DashboardOutlined />,
               label: <Link to="/admin/overview" style={{ color: 'inherit', textDecoration: 'none', fontWeight: 500 }}>Overview</Link>,
             },
-            {
+            ...(user?.role === 'ADMIN' ? [{
               key: 'users',
               icon: <TeamOutlined />,
               label: <Link to="/admin/users" style={{ color: 'inherit', textDecoration: 'none', fontWeight: 500 }}>User Management</Link>,
-            },
+            }] : []),
             {
               key: 'tickets',
               icon: <FileTextOutlined />,

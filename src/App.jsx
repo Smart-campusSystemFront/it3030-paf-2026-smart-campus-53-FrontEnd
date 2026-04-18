@@ -13,12 +13,7 @@ import AdminOverview from './pages/admin/Overview.jsx'
 import AdminTickets from './pages/admin/Tickets.jsx'
 import Profile from './pages/Profile.jsx'
 import AdminUsers from './pages/AdminUsers.jsx'
-
-function HomeRedirect() {
-  const { user, loading } = useAuth()
-  if (loading) return null
-  return <Navigate to={user ? '/dashboard' : '/login'} replace />
-}
+import LandingPage from './pages/LandingPage.jsx'
 
 function App() {
   return (
@@ -26,7 +21,7 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route element={<Layout />}>
-            <Route index element={<HomeRedirect />} />
+            <Route index element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/auth/callback" element={<OAuthCallback />} />
@@ -53,7 +48,7 @@ function App() {
             <Route
               path="/admin"
               element={
-                <ProtectedRoute requireRole="ADMIN">
+                <ProtectedRoute allowedRoles={['ADMIN', 'TECHNICIAN']}>
                   <AdminDashboardLayout />
                 </ProtectedRoute>
               }

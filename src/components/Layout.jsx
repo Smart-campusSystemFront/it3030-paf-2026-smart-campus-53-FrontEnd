@@ -1,4 +1,5 @@
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
+import { useState, useRef, useEffect, useMemo } from 'react'
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faArrowRightFromBracket,
@@ -6,37 +7,185 @@ import {
   faUser,
   faUsers,
   faBuilding,
+  faChevronDown,
+  faUserCircle
 } from '@fortawesome/free-solid-svg-icons'
 import { useAuth } from '../context/AuthContext.jsx'
+import { Button } from './ui.jsx'
 
-function NavItem({ to, icon, label, end }) {
+function ProfileDropdownMenu() {
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+  const [isOpen, setIsOpen] = useState(false)
+  const menuRef = useRef(null)
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  const handleLogout = async () => {
+    setIsOpen(false)
+    await logout()
+  }
+
+  const avatarInitial = useMemo(() => {
+    return `${user?.firstName?.[0] || ''}`.toUpperCase() || 'U'
+  }, [user])
+
   return (
-    <NavLink
-      to={to}
-      end={end}
-      style={({ isActive }) => ({
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 7,
-        borderRadius: 'var(--radius-sm)',
-        padding: '7px 13px',
-        fontSize: 13.5,
-        fontWeight: isActive ? 700 : 500,
-        textDecoration: 'none',
-        transition: 'all var(--duration) var(--ease)',
-        color: isActive ? '#0091FF' : 'var(--text-secondary)',
-        background: isActive ? 'var(--c-blue-light)' : 'transparent',
-        border: isActive ? '1px solid #bae6fd' : '1px solid transparent',
-      })}
-    >
-      <FontAwesomeIcon icon={icon} style={{ fontSize: 13 }} />
-      <span>{label}</span>
-    </NavLink>
+    <div style={{ position: 'relative' }} ref={menuRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          background: 'transparent',
+          border: 'none',
+          padding: '4px 8px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          cursor: 'pointer',
+          borderRadius: 'var(--radius-sm)',
+          transition: 'background var(--duration) var(--ease)',
+        }}
+        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0,145,255,0.06)'}
+        onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+      >
+        <div style={{
+          width: 32, height: 32, borderRadius: 10,
+          background: 'linear-gradient(135deg,var(--c-blue),#0070d1)',
+          color: '#fff', display: 'grid', placeItems: 'center',
+          fontWeight: 700, fontSize: 13,
+          boxShadow: 'var(--shadow-sm)',
+        }}>
+          {avatarInitial}
+        </div>
+        <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column' }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--c-navy)', lineHeight: 1.1 }}>
+            {user?.firstName}
+          </span>
+          <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+            {user?.role}
+          </span>
+        </div>
+        <FontAwesomeIcon
+          icon={faChevronDown}
+          style={{
+            fontSize: 10, color: 'var(--text-muted)',
+            transform: isOpen ? 'rotate(180deg)' : 'rotate(0)',
+            transition: 'transform var(--duration) var(--ease)'
+          }}
+        />
+      </button>
+
+      {/* Dropdown Pane */}
+      {isOpen && (
+        <div
+          className="animate-fade-in"
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 8px)',
+            right: 0,
+            width: 240,
+            background: '#fff',
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid var(--border)',
+            boxShadow: 'var(--shadow-lg)',
+            overflow: 'hidden',
+            zIndex: 100,
+          }}
+        >
+          <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', background: '#fafbfd' }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--c-navy)' }}>
+              {user?.firstName} {user?.lastName}
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+              {user?.email}
+            </div>
+          </div>
+
+          <div style={{ padding: 8, display: 'grid', gap: 2 }}>
+            <Link
+              to="/profile"
+              onClick={() => setIsOpen(false)}
+              style={menuItemStyle}
+              onMouseEnter={menuItemHoverStyle}
+              onMouseLeave={menuItemLeaveStyle}
+            >
+              <FontAwesomeIcon icon={faUser} style={{ width: 16 }} /> My Profile
+            </Link>
+            <Link
+              to="/dashboard"
+              onClick={() => setIsOpen(false)}
+              style={menuItemStyle}
+              onMouseEnter={menuItemHoverStyle}
+              onMouseLeave={menuItemLeaveStyle}
+            >
+              <FontAwesomeIcon icon={faGauge} style={{ width: 16 }} /> User Dashboard
+            </Link>
+            {['ADMIN', 'TECHNICIAN'].includes(user?.role) && (
+              <Link
+                to="/admin/overview"
+                onClick={() => setIsOpen(false)}
+                style={{ ...menuItemStyle, color: 'var(--c-amber)', fontWeight: 600 }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(249,191,59,0.08)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+              >
+                <FontAwesomeIcon icon={faUsers} style={{ width: 16, color: 'var(--c-amber)' }} />
+                {user?.role === 'ADMIN' ? 'Admin Dashboard' : 'Tech Dashboard'}
+              </Link>
+            )}
+          </div>
+
+          <div style={{ padding: 8, borderTop: '1px solid var(--border)' }}>
+            <button
+              onClick={handleLogout}
+              style={{
+                width: '100%',
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '8px 12px', borderRadius: 'var(--radius-sm)',
+                fontSize: 13, fontWeight: 600, color: '#ef4444',
+                background: 'transparent', border: 'none', cursor: 'pointer',
+                textAlign: 'left',
+                transition: 'background var(--duration) var(--ease)',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = '#fff1f2' }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+            >
+              <FontAwesomeIcon icon={faArrowRightFromBracket} style={{ width: 16 }} /> Sign out
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 
+const menuItemStyle = {
+  display: 'flex', alignItems: 'center', gap: 10,
+  padding: '8px 12px', borderRadius: 'var(--radius-sm)',
+  fontSize: 13, fontWeight: 500, color: 'var(--text-primary)',
+  textDecoration: 'none', background: 'transparent',
+  transition: 'background var(--duration) var(--ease)',
+}
+
+const menuItemHoverStyle = (e) => {
+  e.currentTarget.style.background = 'var(--c-blue-light)'
+  e.currentTarget.style.color = 'var(--c-blue)'
+}
+
+const menuItemLeaveStyle = (e) => {
+  e.currentTarget.style.background = 'transparent'
+  e.currentTarget.style.color = 'var(--text-primary)'
+}
+
 export default function Layout() {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const { pathname } = useLocation()
   const shellWide = pathname.startsWith('/dashboard') || pathname.startsWith('/admin')
 
@@ -115,51 +264,26 @@ export default function Layout() {
             </div>
           </Link>
 
-          {/* Nav Links */}
-          {user ? (
-            <nav style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <NavItem to="/dashboard" icon={faGauge}   label="Dashboard" end={false} />
-              <NavItem to="/profile"   icon={faUser}    label="Profile" />
-              {user.role === 'ADMIN' ? (
-                <NavItem to="/admin" icon={faUsers} label="Admin" end={false} />
-              ) : null}
-              <div style={{ width: 1, height: 20, background: 'var(--border)', margin: '0 4px' }} />
-              <button
-                type="button"
-                onClick={logout}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 7,
-                  padding: '7px 13px',
-                  borderRadius: 'var(--radius-sm)',
-                  fontSize: 13.5,
-                  fontWeight: 500,
-                  color: '#ef4444',
-                  background: 'transparent',
-                  border: '1px solid transparent',
-                  cursor: 'pointer',
-                  transition: 'all var(--duration) var(--ease)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#fff1f2'
-                  e.currentTarget.style.borderColor = '#fca5a5'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'transparent'
-                  e.currentTarget.style.borderColor = 'transparent'
-                }}
-              >
-                <FontAwesomeIcon icon={faArrowRightFromBracket} style={{ fontSize: 13 }} />
-                <span>Logout</span>
-              </button>
-            </nav>
-          ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-muted)' }}>
-              <FontAwesomeIcon icon={faBuilding} style={{ color: 'var(--c-blue)' }} />
-              <span>Secured with JWT · Google OAuth</span>
-            </div>
-          )}
+          {/* Navigation Area */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            {user ? (
+              <ProfileDropdownMenu />
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <Link to="/login" style={{ textDecoration: 'none' }}>
+                  <Button variant="ghost" style={{ padding: '6px 14px', fontSize: 13, borderRadius: 6 }}>
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/register" style={{ textDecoration: 'none' }}>
+                  <Button variant="primary" style={{ padding: '6px 14px', fontSize: 13, borderRadius: 6 }}>
+                    Create Account
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </div>
+
         </div>
       </header>
 

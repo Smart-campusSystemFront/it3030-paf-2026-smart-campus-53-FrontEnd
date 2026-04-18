@@ -169,7 +169,7 @@ export default function UserDashboardOverview() {
               {label}
             </Link>
           ))}
-          {user.role === 'ADMIN' && (
+          {['ADMIN', 'TECHNICIAN'].includes(user.role) && (
             <Link
               to="/admin/overview"
               style={{
@@ -184,7 +184,7 @@ export default function UserDashboardOverview() {
               onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)' }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
             >
-              Admin Dashboard
+              {user.role === 'ADMIN' ? 'Admin Dashboard' : 'Tech Dashboard'}
             </Link>
           )}
         </div>
