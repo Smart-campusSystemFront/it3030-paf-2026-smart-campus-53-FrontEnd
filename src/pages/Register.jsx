@@ -44,22 +44,47 @@ function Field({ label, icon, ...props }) {
 }
 
 export default function Register() {
-  const { register } = useAuth()
+  const { register, sendOtp } = useAuth()
   const nav = useNavigate()
 
   const [email, setEmail] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [step, setStep] = useState(1) // 1 for details, 2 for OTP
+  const [otp, setOtp] = useState('')
 
-  async function onSubmit(e) {
+  async function handleSendOtp(e) {
     e.preventDefault()
     setError('')
+    if (password !== confirmPassword) {
+      setError('Passwords do not match')
+      return
+    }
     setBusy(true)
     try {
-      await register({ email, firstName, lastName, password })
+      await sendOtp(email)
+      setStep(2)
+    } catch (err) {
+      setError(err?.message || 'Failed to send OTP')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function onCompleteRegistration(e) {
+    e.preventDefault()
+    setError('')
+    if (!otp || otp.length < 4) {
+      setError('Please enter the OTP sent to your email')
+      return
+    }
+    setBusy(true)
+    try {
+      await register({ email, firstName, lastName, password, otp })
       nav('/dashboard', { replace: true })
     } catch (err) {
       setError(err?.message || 'Registration failed')
@@ -67,6 +92,7 @@ export default function Register() {
       setBusy(false)
     }
   }
+
 
   return (
     <div
@@ -111,40 +137,75 @@ export default function Register() {
           boxShadow: 'var(--shadow-lg)',
           padding: '32px 30px',
         }}>
-          <form onSubmit={onSubmit} style={{ display: 'grid', gap: 14 }}>
-            {error ? <Alert tone="error">{error}</Alert> : null}
+          {step === 1 ? (
+            <form onSubmit={handleSendOtp} style={{ display: 'grid', gap: 14 }}>
+              {error ? <Alert tone="error">{error}</Alert> : null}
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <Field label="First name" icon={faUser} value={firstName} onChange={(e) => setFirstName(e.target.value)} required placeholder="Jane" />
-              <Field label="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} required placeholder="Doe" />
-            </div>
-
-            <Field label="Email address" icon={faEnvelope} type="email" autoComplete="email"
-              placeholder="you@university.edu" value={email} onChange={(e) => setEmail(e.target.value)} required />
-
-            <Field label="Password (min 8 chars)" icon={faLock} type="password" autoComplete="new-password"
-              placeholder="Create a strong password" value={password} onChange={(e) => setPassword(e.target.value)}
-              required minLength={8} />
-
-            {/* Password strength hint */}
-            {password.length > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                {[...Array(4)].map((_, i) => {
-                  const score = Math.min(Math.floor(password.length / 3), 4)
-                  const colors = ['#ef4444','#f59e0b','#10b981','#0091FF']
-                  return (
-                    <div key={i} style={{ flex: 1, height: 3, borderRadius: 99, background: i < score ? colors[score - 1] : 'var(--border)', transition: 'background 0.3s' }} />
-                  )
-                })}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <Field label="First name" icon={faUser} value={firstName} onChange={(e) => setFirstName(e.target.value)} required placeholder="Jane" />
+                <Field label="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} required placeholder="Doe" />
               </div>
-            )}
 
-            <Button type="submit" disabled={busy} style={{ width: '100%', padding: '11px 18px', justifyContent: 'center', marginTop: 4 }}>
-              {busy ? 'Creating account…' : (
-                <>Create account <FontAwesomeIcon icon={faArrowRight} style={{ fontSize: 12 }} /></>
+              <Field label="Email address" icon={faEnvelope} type="email" autoComplete="email"
+                placeholder="you@university.edu" value={email} onChange={(e) => setEmail(e.target.value)} required />
+
+              <Field label="Password (min 8 chars)" icon={faLock} type="password" autoComplete="new-password"
+                placeholder="Create a strong password" value={password} onChange={(e) => setPassword(e.target.value)}
+                required minLength={8} />
+
+              <Field label="Confirm password" icon={faLock} type="password" autoComplete="new-password"
+                placeholder="Retype your password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+                required minLength={8} />
+
+              {/* Password strength hint */}
+              {password.length > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {[...Array(4)].map((_, i) => {
+                    const score = Math.min(Math.floor(password.length / 3), 4)
+                    const colors = ['#ef4444','#f59e0b','#10b981','#0091FF']
+                    return (
+                      <div key={i} style={{ flex: 1, height: 3, borderRadius: 99, background: i < score ? colors[score - 1] : 'var(--border)', transition: 'background 0.3s' }} />
+                    )
+                  })}
+                </div>
               )}
-            </Button>
-          </form>
+
+              <Button type="submit" disabled={busy} style={{ width: '100%', padding: '11px 18px', justifyContent: 'center', marginTop: 4 }}>
+                {busy ? 'Sending OTP…' : (
+                  <>Continue <FontAwesomeIcon icon={faArrowRight} style={{ fontSize: 12 }} /></>
+                )}
+              </Button>
+            </form>
+          ) : (
+            <form onSubmit={onCompleteRegistration} style={{ display: 'grid', gap: 14 }} className="animate-fade-in">
+              {error ? <Alert tone="error">{error}</Alert> : null}
+              
+              <Alert tone="info">
+                We've sent a 6-digit OTP to <strong>{email}</strong>. Please enter it below to verify your email.
+              </Alert>
+
+              <Field 
+                label="Email OTP Code" 
+                placeholder="Enter 6-digit code" 
+                value={otp} 
+                onChange={(e) => setOtp(e.target.value)} 
+                required 
+                maxLength={6}
+                style={{ letterSpacing: '2px', fontSize: 18, textAlign: 'center' }}
+              />
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'min-content 1fr', gap: 12, marginTop: 4 }}>
+                <Button type="button" variant="ghost" onClick={() => setStep(1)} disabled={busy} style={{ padding: '11px 16px' }}>
+                  Back
+                </Button>
+                <Button type="submit" disabled={busy} style={{ width: '100%', padding: '11px 18px', justifyContent: 'center' }}>
+                  {busy ? 'Verifying…' : (
+                    <>Verify & Register <FontAwesomeIcon icon={faArrowRight} style={{ fontSize: 12 }} /></>
+                  )}
+                </Button>
+              </div>
+            </form>
+          )}
 
           <Divider />
 

@@ -50,15 +50,22 @@ export function AuthProvider({ children }) {
     return data
   }, [])
 
-  const register = useCallback(async ({ email, firstName, lastName, password }) => {
+  const register = useCallback(async ({ email, firstName, lastName, password, otp }) => {
     const data = await apiRequest('/api/auth/register', {
       method: 'POST',
-      body: { email, firstName, lastName, password },
+      body: { email, firstName, lastName, password, otp },
     })
     setToken(data?.accessToken)
     setTokenState(data?.accessToken || null)
     setUser(data?.user || null)
     return data
+  }, [])
+
+  const sendOtp = useCallback(async (email) => {
+    return await apiRequest('/api/auth/send-otp', {
+      method: 'POST',
+      body: { email },
+    })
   }, [])
 
   const acceptOAuthToken = useCallback(async (newToken) => {
@@ -83,8 +90,9 @@ export function AuthProvider({ children }) {
       logout,
       refreshMe,
       acceptOAuthToken,
+      sendOtp,
     }),
-    [token, user, loading, login, register, logout, refreshMe, acceptOAuthToken],
+    [token, user, loading, login, register, logout, refreshMe, acceptOAuthToken, sendOtp],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
