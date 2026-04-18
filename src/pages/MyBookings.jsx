@@ -2,11 +2,11 @@ import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { CalendarDays, Plus } from "lucide-react";
-import { cancelBooking } from "../api/bookingApi";
+import { cancelBookingWithReason } from "../api/bookingApi";
 import { useBookings } from "../hooks/useBookings";
 import BookingCard from "../components/BookingCard";
 import SkeletonCard from "../components/SkeletonCard";
-import ConfirmModal from "../components/ConfirmModal";
+import CancelReasonModal from "../components/CancelReasonModal";
 import BookingCalendar from "../components/BookingCalendar";
 
 const TABS = ["All", "PENDING", "APPROVED", "REJECTED", "CANCELLED"];
@@ -26,7 +26,7 @@ function countByStatus(list) {
 
 export default function MyBookings() {
   const navigate = useNavigate();
-  const baseFilters = useMemo(() => ({ scope: "my" }), []);
+  const baseFilters = useMemo(() => ({}), []);
   const { bookings, loading, error, fetchBookings, updateInList } = useBookings(baseFilters);
   const [activeTab, setActiveTab] = useState("All");
 
@@ -41,11 +41,11 @@ export default function MyBookings() {
     return bookings.filter((b) => b?.status === activeTab);
   }, [bookings, activeTab]);
 
-  async function doCancel() {
+  async function doCancel(reason) {
     if (!selectedBooking?.id) return;
     setActionLoading(true);
     try {
-      const updated = await cancelBooking(selectedBooking.id);
+      const updated = await cancelBookingWithReason(selectedBooking.id, reason);
       updateInList(selectedBooking.id, updated);
       toast.success("Booking cancelled");
       setConfirmOpen(false);
@@ -58,7 +58,7 @@ export default function MyBookings() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 pb-16">
       <div className="mx-auto max-w-6xl px-4 py-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
@@ -68,7 +68,7 @@ export default function MyBookings() {
           <button
             type="button"
             onClick={() => navigate("/booking/new")}
-            className="rounded-xl px-4 py-2 font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-all inline-flex items-center gap-2"
+            className="rounded-xl px-4 py-2 font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-all inline-flex items-center gap-2 shadow-sm"
           >
             <Plus size={18} />
             New Booking
@@ -113,7 +113,7 @@ export default function MyBookings() {
             <p className="mt-1 text-sm text-rose-700/90">{error}</p>
             <button
               type="button"
-              onClick={() => fetchBookings({ scope: "my" })}
+              onClick={() => fetchBookings({})}
               className="mt-4 rounded-xl px-4 py-2 font-medium text-white bg-rose-600 hover:bg-rose-700 transition-all"
             >
               Try Again
@@ -126,13 +126,11 @@ export default function MyBookings() {
             {activeTab === "All" ? "All Bookings" : `${tabLabel(activeTab)} Bookings`}
           </h2>
           {!loading && !error && (
-            <span className="text-sm font-semibold text-slate-600">
-              {filtered.length} shown
-            </span>
+            <span className="text-sm font-semibold text-slate-600">{filtered.length} shown</span>
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           {loading && Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
 
           {!loading &&
@@ -167,7 +165,7 @@ export default function MyBookings() {
             <button
               type="button"
               onClick={() => navigate("/booking/new")}
-              className="mt-6 rounded-xl px-4 py-2 font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-all"
+              className="mt-6 rounded-xl px-4 py-2 font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-all"
             >
               Book a Resource
             </button>
@@ -192,14 +190,13 @@ export default function MyBookings() {
         </div>
       </div>
 
-      <ConfirmModal
+      <CancelReasonModal
         isOpen={confirmOpen}
         title="Cancel booking?"
-        message="This will cancel your booking."
-        confirmText="Cancel Booking"
-        confirmColor="rose"
+        subtitle="Please tell us why you are cancelling (10–500 characters)."
+        confirmText="Cancel booking"
         loading={actionLoading}
-        onCancel={() => {
+        onClose={() => {
           if (actionLoading) return;
           setConfirmOpen(false);
           setSelectedBooking(null);
@@ -209,4 +206,3 @@ export default function MyBookings() {
     </div>
   );
 }
-

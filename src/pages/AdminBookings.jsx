@@ -8,9 +8,16 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { approveBooking, getBookingStats, rejectBooking } from "../api/bookingApi";
+import {
+  approveBooking,
+  exportBookingsCsv,
+  getActiveResources,
+  getBookingStats,
+  rejectBooking,
+} from "../api/bookingApi";
 import { useBookings } from "../hooks/useBookings";
 import BookingStatusBadge from "../components/BookingStatusBadge";
+import HourlyBookingChart from "../components/HourlyBookingChart";
 import ConfirmModal from "../components/ConfirmModal";
 import RejectModal from "../components/RejectModal";
 import { format } from "date-fns";
@@ -53,9 +60,11 @@ function SkeletonRow() {
 
 export default function AdminBookings() {
   const [filters, setFilters] = useState({
-    scope: "admin",
     status: "",
     date: "",
+    from: "",
+    to: "",
+    resourceId: "",
     search: "",
   });
   const { bookings, loading, error, fetchBookings, updateInList, setBookings } =
@@ -64,10 +73,16 @@ export default function AdminBookings() {
   const [statsLoading, setStatsLoading] = useState(true);
   const [stats, setStats] = useState({
     totalBookingsToday: 0,
+    totalBookings: 0,
     pendingCount: 0,
     approvedCount: 0,
+    rejectedCount: 0,
+    cancelledCount: 0,
     mostBookedResourceName: "—",
+    peakHours: [],
   });
+
+  const [resources, setResources] = useState([]);
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
@@ -79,15 +94,34 @@ export default function AdminBookings() {
   React.useEffect(() => {
     let mounted = true;
     (async () => {
+      try {
+        const r = await getActiveResources();
+        if (mounted) setResources(Array.isArray(r) ? r : []);
+      } catch {
+        if (mounted) setResources([]);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  React.useEffect(() => {
+    let mounted = true;
+    (async () => {
       setStatsLoading(true);
       try {
         const s = await getBookingStats();
         if (!mounted) return;
         setStats({
           totalBookingsToday: s?.totalBookingsToday ?? 0,
+          totalBookings: s?.totalBookings ?? 0,
           pendingCount: s?.pendingCount ?? 0,
           approvedCount: s?.approvedCount ?? 0,
+          rejectedCount: s?.rejectedCount ?? 0,
+          cancelledCount: s?.cancelledCount ?? 0,
           mostBookedResourceName: s?.mostBookedResourceName || "—",
+          peakHours: Array.isArray(s?.peakHours) ? s.peakHours : [],
         });
       } catch (e) {
         if (!mounted) return;
@@ -119,7 +153,7 @@ export default function AdminBookings() {
 
   React.useEffect(() => {
     setPage(1);
-  }, [filters.status, filters.date, filters.search]);
+  }, [filters.status, filters.date, filters.from, filters.to, filters.resourceId, filters.search]);
 
   async function refresh() {
     await fetchBookings(filters);
@@ -174,27 +208,8 @@ export default function AdminBookings() {
     return Math.round((approved / denom) * 100);
   }, [stats.pendingCount, stats.approvedCount]);
 
-  const peakBars = useMemo(() => {
-    const hours = Array.from({ length: 8 }).map((_, i) => 9 + i);
-    const counts = hours.map((h) =>
-      bookings.filter((b) => {
-        try {
-          return new Date(b.startTime).getHours() === h;
-        } catch {
-          return false;
-        }
-      }).length
-    );
-    const max = Math.max(1, ...counts);
-    return hours.map((h, i) => ({
-      hour: h,
-      count: counts[i],
-      heightPct: Math.round((counts[i] / max) * 100),
-    }));
-  }, [bookings]);
-
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 pb-16">
       <div className="mx-auto max-w-7xl px-4 py-8 space-y-6">
         <div>
           <h1 className="text-2xl font-semibold text-slate-900">Admin Bookings</h1>
@@ -204,11 +219,15 @@ export default function AdminBookings() {
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           <div className="rounded-2xl bg-white border border-slate-100 shadow-sm p-6">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-slate-700">Today's Bookings</p>
+              <p className="text-sm font-semibold text-slate-700">Total (all time)</p>
               <Calendar size={18} className="text-indigo-600" />
             </div>
             <p className="mt-3 text-3xl font-semibold text-slate-900">
-              {statsLoading ? "—" : stats.totalBookingsToday}
+              {statsLoading ? "—" : stats.totalBookings}
+            </p>
+            <p className="mt-2 text-xs text-slate-500">
+              Today created:{" "}
+              <span className="font-semibold text-slate-700">{statsLoading ? "—" : stats.totalBookingsToday}</span>
             </p>
           </div>
 
@@ -227,11 +246,17 @@ export default function AdminBookings() {
 
           <div className="rounded-2xl bg-white border border-slate-100 shadow-sm p-6">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-slate-700">Approved Today</p>
+              <p className="text-sm font-semibold text-slate-700">Approved</p>
               <CheckCircle size={18} className="text-emerald-600" />
             </div>
             <p className="mt-3 text-3xl font-semibold text-slate-900">
               {statsLoading ? "—" : stats.approvedCount}
+            </p>
+            <p className="mt-2 text-xs text-slate-500">
+              Rejected:{" "}
+              <span className="font-semibold text-slate-700">{statsLoading ? "—" : stats.rejectedCount}</span> ·
+              Cancelled:{" "}
+              <span className="font-semibold text-slate-700">{statsLoading ? "—" : stats.cancelledCount}</span>
             </p>
           </div>
 
@@ -250,26 +275,17 @@ export default function AdminBookings() {
         </div>
 
         <div className="rounded-2xl bg-white border border-slate-100 shadow-sm p-6">
-          <h2 className="text-lg font-semibold text-slate-900">Peak Booking Hours</h2>
-          <p className="text-sm text-slate-600">Simple bar chart (no library).</p>
-          <div className="mt-5 flex items-end gap-2 h-28">
-            {peakBars.map((b) => (
-              <div key={b.hour} className="flex-1 flex flex-col items-center gap-2">
-                <div className="w-full rounded-xl bg-slate-100 overflow-hidden h-20 flex items-end">
-                  <div
-                    className="w-full bg-indigo-500 rounded-xl transition-all"
-                    style={{ height: `${Math.max(6, b.heightPct)}%` }}
-                    title={`${b.count} bookings`}
-                  />
-                </div>
-                <span className="text-xs font-semibold text-slate-600">{b.hour}:00</span>
-              </div>
-            ))}
+          <h2 className="text-lg font-semibold text-slate-900">Peak booking hours</h2>
+          <p className="text-sm text-slate-600 mt-1">
+            All hourly slots in the window; violet highlights mark peak demand (from server stats when loaded).
+          </p>
+          <div className="mt-4">
+            <HourlyBookingChart bookings={bookings} peakHours={stats.peakHours?.length ? stats.peakHours : null} />
           </div>
         </div>
 
         <div className="rounded-2xl bg-white border border-slate-100 shadow-sm p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-700" htmlFor="statusFilter">
                 Status
@@ -291,26 +307,93 @@ export default function AdminBookings() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-700" htmlFor="dateFilter">
-                Date
+                Single day
               </label>
               <input
                 id="dateFilter"
                 type="date"
-                aria-label="Filter by date"
+                aria-label="Filter by single day"
                 className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
                 value={filters.date}
-                onChange={(e) => setFilters((f) => ({ ...f, date: e.target.value }))}
+                onChange={(e) =>
+                  setFilters((f) => ({
+                    ...f,
+                    date: e.target.value,
+                    from: "",
+                    to: "",
+                  }))
+                }
               />
             </div>
 
-            <div className="space-y-2 md:col-span-2">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700" htmlFor="fromFilter">
+                From
+              </label>
+              <input
+                id="fromFilter"
+                type="date"
+                aria-label="Filter from date"
+                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                value={filters.from}
+                onChange={(e) =>
+                  setFilters((f) => ({
+                    ...f,
+                    from: e.target.value,
+                    date: "",
+                  }))
+                }
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700" htmlFor="toFilter">
+                To
+              </label>
+              <input
+                id="toFilter"
+                type="date"
+                aria-label="Filter to date"
+                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                value={filters.to}
+                onChange={(e) =>
+                  setFilters((f) => ({
+                    ...f,
+                    to: e.target.value,
+                    date: "",
+                  }))
+                }
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700" htmlFor="resourceFilter">
+                Resource
+              </label>
+              <select
+                id="resourceFilter"
+                aria-label="Filter by resource"
+                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                value={filters.resourceId}
+                onChange={(e) => setFilters((f) => ({ ...f, resourceId: e.target.value }))}
+              >
+                <option value="">All resources</option>
+                {resources.map((r) => (
+                  <option key={r?.resourceId ?? r?.id} value={String(r?.resourceId ?? r?.id)}>
+                    {r.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
               <label className="text-sm font-medium text-slate-700" htmlFor="searchFilter">
                 Search
               </label>
               <input
                 id="searchFilter"
                 type="text"
-                placeholder="Search by user name or email..."
+                placeholder="User name or email..."
                 aria-label="Search by user name or email"
                 className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
                 value={filters.search}
@@ -323,7 +406,7 @@ export default function AdminBookings() {
             <button
               type="button"
               onClick={() => {
-                const cleared = { scope: "admin", status: "", date: "", search: "" };
+                const cleared = { status: "", date: "", from: "", to: "", resourceId: "", search: "" };
                 setFilters(cleared);
                 setBookings([]);
                 fetchBookings(cleared);
@@ -338,6 +421,13 @@ export default function AdminBookings() {
               className="rounded-xl px-4 py-2 font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-all"
             >
               Refresh
+            </button>
+            <button
+              type="button"
+              onClick={() => exportBookingsCsv(filteredClient, "admin-bookings.csv")}
+              className="rounded-xl px-4 py-2 font-medium text-indigo-800 bg-indigo-50 hover:bg-indigo-100 transition-all border border-indigo-100"
+            >
+              Export CSV
             </button>
           </div>
         </div>

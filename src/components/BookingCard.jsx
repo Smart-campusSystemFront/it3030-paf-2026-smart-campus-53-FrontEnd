@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from "react";
-import { Calendar, Clock, MapPin, Tag, Users } from "lucide-react";
+import { Calendar, Clock, MapPin, QrCode, Tag, Users } from "lucide-react";
 import { format, formatDuration, intervalToDuration } from "date-fns";
 import BookingStatusBadge from "./BookingStatusBadge";
+import BookingQrImage, { COMPACT_QR_SHELL_MIN_CLASS } from "./BookingQrImage";
 
 function statusAccent(status) {
   if (status === "APPROVED") return "bg-emerald-500";
@@ -43,6 +44,25 @@ function fmtDurationMinutes(start, end, durationMinutes) {
   }
 }
 
+const PURPOSE_PREVIEW = 96;
+
+function QrFooterPlaceholder({ status, qrUnavailable }) {
+  let msg = "Check-in QR is issued after your booking is approved.";
+  if (status === "REJECTED") msg = "No check-in QR for rejected bookings.";
+  else if (status === "CANCELLED") msg = "No check-in QR for cancelled bookings.";
+  else if (status === "APPROVED" && qrUnavailable) msg = "Check-in QR is not available for this booking.";
+
+  return (
+    <div
+      className={`rounded-xl border border-dashed border-slate-200/90 bg-slate-50/70 ${COMPACT_QR_SHELL_MIN_CLASS} flex flex-col items-center justify-center gap-2 px-3 text-center mt-0.5`}
+      role="note"
+    >
+      <QrCode className="text-slate-300" size={22} strokeWidth={1.25} aria-hidden />
+      <p className="text-[11px] text-slate-400 leading-snug max-w-[11rem]">{msg}</p>
+    </div>
+  );
+}
+
 export default function BookingCard({ booking, onCancel }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -50,7 +70,7 @@ export default function BookingCard({ booking, onCancel }) {
     booking?.canCancel && (booking?.status === "PENDING" || booking?.status === "APPROVED");
 
   const purpose = booking?.purpose || "";
-  const displayPurpose = expanded ? purpose : purpose.slice(0, 140);
+  const displayPurpose = expanded ? purpose : purpose.slice(0, PURPOSE_PREVIEW);
 
   const durationText = useMemo(
     () =>
@@ -62,50 +82,55 @@ export default function BookingCard({ booking, onCancel }) {
     [booking?.startTime, booking?.endTime, booking?.durationMinutes]
   );
 
+  const showRealQr = booking?.status === "APPROVED" && booking?.qrAvailable !== false;
+  const qrUnavailable = booking?.status === "APPROVED" && booking?.qrAvailable === false;
+
   return (
-    <div className="relative rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all overflow-hidden">
-      <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${statusAccent(booking?.status)}`} />
-      <div className="p-6 pl-7 space-y-4">
-        <div className="flex items-start justify-between gap-4">
-          <h3 className="text-base font-semibold text-slate-900">
+    <div className="relative h-full flex flex-col w-full max-w-full rounded-xl bg-white border border-slate-100 shadow-sm hover:shadow transition-all overflow-hidden">
+      <div className={`absolute left-0 top-0 bottom-0 w-1 ${statusAccent(booking?.status)}`} />
+      <div className="p-3.5 pl-4 flex flex-col flex-1 min-h-0 h-full">
+        <div className="flex-1 flex flex-col gap-1.5 min-h-0">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="text-sm font-semibold text-slate-900 leading-snug line-clamp-2 pr-1">
             {booking?.resourceName || "Resource"}
           </h3>
-          <BookingStatusBadge status={booking?.status} />
+          <BookingStatusBadge status={booking?.status} size="sm" />
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
-          <span className="inline-flex items-center gap-2">
-            <MapPin size={16} className="text-slate-400" />
-            {booking?.resourceLocation || "—"}
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-600">
+          <span className="inline-flex items-center gap-1 min-w-0">
+            <MapPin size={13} className="text-slate-400 shrink-0" />
+            <span className="truncate">{booking?.resourceLocation || "—"}</span>
           </span>
-          <span className="inline-flex items-center gap-2">
-            <Tag size={16} className="text-slate-400" />
+          <span className="text-slate-300">·</span>
+          <span className="inline-flex items-center gap-1">
+            <Tag size={13} className="text-slate-400 shrink-0" />
             {booking?.resourceType || "—"}
           </span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600">
-          <span className="inline-flex items-center gap-2">
-            <Calendar size={16} className="text-slate-400" />
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-slate-600">
+          <span className="inline-flex items-center gap-1">
+            <Calendar size={13} className="text-slate-400 shrink-0" />
             {fmtDate(booking?.startTime)}
           </span>
-          <span className="inline-flex items-center gap-2">
-            <Clock size={16} className="text-slate-400" />
+          <span className="inline-flex items-center gap-1">
+            <Clock size={13} className="text-slate-400 shrink-0" />
             {fmtTimeRange(booking?.startTime, booking?.endTime)}
           </span>
-          <span className="inline-flex items-center gap-2">
-            <span className="text-slate-400">⏱️</span>
+          <span className="inline-flex items-center gap-1 text-slate-500">
+            <span className="text-slate-400">⏱</span>
             {durationText}
           </span>
         </div>
 
-        <div className="text-sm text-slate-700 leading-relaxed">
+        <div className="text-xs text-slate-700 leading-snug">
           <p className={expanded ? "" : "line-clamp-2"}>{displayPurpose}</p>
-          {purpose.length > 140 && (
+          {purpose.length > PURPOSE_PREVIEW && (
             <button
               type="button"
               onClick={() => setExpanded((v) => !v)}
-              className="mt-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition-all"
+              className="mt-0.5 text-[11px] font-semibold text-indigo-600 hover:text-indigo-700 transition-all"
               aria-label={expanded ? "Collapse purpose" : "Expand purpose"}
             >
               {expanded ? "Show less" : "Show more"}
@@ -113,34 +138,46 @@ export default function BookingCard({ booking, onCancel }) {
           )}
         </div>
 
-        <div className="flex items-center justify-between gap-3">
-          <span className="inline-flex items-center gap-2 text-sm text-slate-600">
-            <Users size={16} className="text-slate-400" />
+        <div className="flex items-center gap-2 flex-wrap pt-0.5">
+          <span className="inline-flex items-center gap-1 text-xs text-slate-600 min-w-0">
+            <Users size={13} className="text-slate-400 shrink-0" />
             {booking?.expectedAttendees ?? "—"} attendees
           </span>
-
           {canCancel ? (
             <button
               type="button"
               onClick={() => onCancel?.(booking)}
-              className="rounded-xl px-4 py-2 font-medium text-rose-700 border border-rose-200 hover:bg-rose-50 transition-all"
+              className="rounded-lg px-2.5 py-1 text-xs font-semibold text-rose-700 border border-rose-200 hover:bg-rose-50 transition-all shrink-0 ml-auto"
               aria-label="Cancel booking"
             >
               Cancel
             </button>
-          ) : (
-            <span className="text-sm text-slate-400"> </span>
-          )}
+          ) : null}
         </div>
 
         {booking?.status === "REJECTED" && booking?.rejectionReason && (
-          <div className="rounded-xl bg-rose-50 border border-rose-100 p-4">
-            <p className="text-sm font-semibold text-rose-700">Rejection Reason</p>
-            <p className="mt-1 text-sm text-rose-700/90">{booking.rejectionReason}</p>
+          <div className="rounded-lg bg-rose-50 border border-rose-100 p-2.5">
+            <p className="text-[11px] font-semibold text-rose-700">Rejection reason</p>
+            <p className="mt-0.5 text-xs text-rose-700/90 line-clamp-3">{booking.rejectionReason}</p>
           </div>
         )}
+
+        {booking?.status === "CANCELLED" && booking?.cancellationReason && (
+          <div className="rounded-lg bg-slate-50 border border-slate-100 p-2.5">
+            <p className="text-[11px] font-semibold text-slate-700">Cancellation</p>
+            <p className="mt-0.5 text-xs text-slate-600 line-clamp-3">{booking.cancellationReason}</p>
+          </div>
+        )}
+        </div>
+
+        <div className="shrink-0 pt-1">
+          {showRealQr ? (
+            <BookingQrImage bookingId={booking.id} compact className="mt-0.5" />
+          ) : (
+            <QrFooterPlaceholder status={booking?.status} qrUnavailable={qrUnavailable} />
+          )}
+        </div>
       </div>
     </div>
   );
 }
-

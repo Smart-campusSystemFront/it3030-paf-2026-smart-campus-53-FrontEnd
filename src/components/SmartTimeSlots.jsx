@@ -1,8 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { checkAvailability } from "../api/bookingApi";
+import { getDayAvailability } from "../api/bookingApi";
 
-function toLocalDateTimeInputValue(d) {
+function toLocalDateTimeInputValue(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
   const yyyy = d.getFullYear();
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const dd = String(d.getDate()).padStart(2, "0");
@@ -11,28 +14,41 @@ function toLocalDateTimeInputValue(d) {
   return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
 }
 
-function buildSlots(selectedDate, startHHMM, endHHMM) {
-  if (!selectedDate) return [];
-  const start = new Date(`${selectedDate}T${startHHMM}:00`);
-  const end = new Date(`${selectedDate}T${endHHMM}:00`);
-
-  const slots = [];
-  let cur = new Date(start);
-  while (cur.getTime() + 60 * 60000 <= end.getTime()) {
-    const next = new Date(cur.getTime() + 60 * 60000);
-    slots.push({
-      // Must be LOCAL time for <input type="datetime-local"> and backend LocalDateTime.
-      // Using toISOString() shifts to UTC and causes validation errors.
-      startLocal: toLocalDateTimeInputValue(cur),
-      endLocal: toLocalDateTimeInputValue(next),
-    });
-    cur = next;
-  }
-  return slots;
+function pad2(n) {
+  return String(n).padStart(2, "0");
 }
 
-function toApiDateTime(datetimeLocal) {
-  return datetimeLocal?.length === 16 ? `${datetimeLocal}:00` : datetimeLocal;
+/** Build 06:00–22:00 hourly slots for `selectedDate` when API has no `daySlots` (older server). */
+function slotsFromAvailableOnly(selectedDate, availableSlots) {
+  const free = new Set(
+    (availableSlots || []).map((s) => toLocalDateTimeInputValue(s.startTime).slice(0, 16))
+  );
+  const out = [];
+  for (let h = 6; h <= 21; h++) {
+    const startLocal = `${selectedDate}T${pad2(h)}:00`;
+    const endLocal = `${selectedDate}T${pad2(h + 1)}:00`;
+    out.push({ startLocal, endLocal, available: free.has(startLocal) });
+  }
+  return out;
+}
+
+function normalizeDaySlots(selectedDate, res) {
+  const raw = Array.isArray(res?.daySlots) ? res.daySlots : [];
+  if (raw.length > 0) {
+    return raw.map((s) => ({
+      startLocal: toLocalDateTimeInputValue(s.startTime),
+      endLocal: toLocalDateTimeInputValue(s.endTime),
+      available: s.available !== false && s.available !== "false",
+    }));
+  }
+  const avail = Array.isArray(res?.availableSlots) ? res.availableSlots : [];
+  return slotsFromAvailableOnly(selectedDate, avail);
+}
+
+function rangeLabel(startLocal) {
+  const h = Number(startLocal.slice(11, 13));
+  if (!Number.isFinite(h)) return startLocal.slice(11, 16);
+  return `${h}–${h + 1}`;
 }
 
 export default function SmartTimeSlots({
@@ -43,102 +59,95 @@ export default function SmartTimeSlots({
   onSelectSlot,
 }) {
   const rid = useMemo(() => Number(resourceId), [resourceId]);
-  const slots = useMemo(
-    () => buildSlots(selectedDate, availabilityStart, availabilityEnd),
-    [selectedDate, availabilityStart, availabilityEnd]
-  );
-
-  const [state, setState] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [slots, setSlots] = useState([]);
 
   useEffect(() => {
     let cancelled = false;
-
     async function run() {
-      if (!Number.isFinite(rid) || rid <= 0 || !selectedDate || slots.length === 0) {
-        setState({});
+      if (!Number.isFinite(rid) || rid <= 0 || !selectedDate) {
+        setSlots([]);
         return;
       }
-
-      const initial = {};
-      for (const s of slots) initial[s.startLocal] = { loading: true, available: null };
-      setState(initial);
-
-      await Promise.all(
-        slots.map(async (s) => {
-          try {
-            const res = await checkAvailability(
-              rid,
-              toApiDateTime(s.startLocal),
-              toApiDateTime(s.endLocal)
-            );
-            if (cancelled) return;
-            setState((prev) => ({
-              ...prev,
-              [s.startLocal]: { loading: false, available: !!res?.available },
-            }));
-          } catch {
-            if (cancelled) return;
-            setState((prev) => ({
-              ...prev,
-              [s.startLocal]: { loading: false, available: null },
-            }));
-          }
-        })
-      );
+      setLoading(true);
+      try {
+        const res = await getDayAvailability(rid, selectedDate);
+        if (cancelled) return;
+        setSlots(normalizeDaySlots(selectedDate, res));
+      } catch {
+        if (!cancelled) setSlots([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     }
-
     run();
     return () => {
       cancelled = true;
     };
-  }, [rid, selectedDate, slots]);
+  }, [rid, selectedDate]);
 
   if (!Number.isFinite(rid) || rid <= 0 || !selectedDate) return null;
 
   return (
-    <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
+    <div className="rounded-2xl border border-slate-100 bg-slate-50 shadow-sm p-5">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-semibold text-slate-900">Quick Select — Available Slots</p>
-        <p className="text-xs text-slate-500">1-hour slots</p>
+        <p className="text-sm font-semibold text-slate-900">Quick Select</p>
+        <p className="text-xs text-slate-500">
+          {availabilityStart}–{availabilityEnd} · 1h slots · unavailable disabled
+        </p>
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
-        {slots.map((s) => {
-          const st = state[s.startLocal] || { loading: true, available: null };
-          const label = `${s.startLocal.slice(11, 16)}–${s.endLocal.slice(11, 16)}`;
-
-          if (st.loading) {
-            return (
-              <span
-                key={s.startLocal}
-                className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200 animate-pulse"
-              >
-                <Loader2 size={14} className="animate-spin" />
-                {label}
-              </span>
-            );
-          }
-
-          const isAvail = st.available === true;
-          return (
-            <button
-              key={s.startLocal}
-              type="button"
-              onClick={() => onSelectSlot?.(s.startLocal, s.endLocal)}
-              disabled={!isAvail}
-              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all border ${
-                isAvail
-                  ? "border-emerald-200 text-emerald-700 bg-white hover:bg-emerald-50"
-                  : "border-slate-200 text-slate-400 bg-white line-through cursor-not-allowed"
-              }`}
-              aria-label={`Select slot ${label}`}
+        {loading &&
+          Array.from({ length: 16 }).map((_, i) => (
+            <span
+              key={i}
+              className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200 animate-pulse"
             >
-              {label}
-            </button>
-          );
-        })}
+              <Loader2 size={14} className="animate-spin" />
+              …
+            </span>
+          ))}
+
+        {!loading && slots.length === 0 && (
+          <p className="text-sm text-slate-600">Could not load slots for this date. Try again or adjust the start date.</p>
+        )}
+
+        {!loading &&
+          slots.map((s) => {
+            const label = rangeLabel(s.startLocal);
+            const endMs = new Date(s.endLocal).getTime();
+            const past = Number.isFinite(endMs) && endMs <= Date.now();
+            const disabled = !s.available || past;
+            const title = past
+              ? "This time has already passed"
+              : !s.available
+                ? "This time is not available (already booked)"
+                : `Select ${label}`;
+
+            return (
+              <button
+                key={s.startLocal}
+                type="button"
+                disabled={disabled}
+                title={title}
+                onClick={() => {
+                  if (disabled) return;
+                  onSelectSlot?.(s.startLocal, s.endLocal);
+                }}
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all border ${
+                  disabled
+                    ? "cursor-not-allowed border-slate-200 bg-slate-100/90 text-slate-400 opacity-70"
+                    : "border-emerald-200 text-emerald-700 bg-emerald-50/80 hover:bg-emerald-100 hover:shadow-sm"
+                }`}
+                aria-label={disabled ? `${label} (not selectable)` : `Select slot ${label}`}
+                aria-disabled={disabled}
+              >
+                {label}
+              </button>
+            );
+          })}
       </div>
     </div>
   );
 }
-

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { getAllBookings, getMyBookings } from "../api/bookingApi";
+import { getBookings } from "../api/bookingApi";
 
 export function useBookings(initialFilters = {}) {
   const [bookings, setBookings] = useState([]);
@@ -13,9 +13,7 @@ export function useBookings(initialFilters = {}) {
       setLoading(true);
       setError("");
       try {
-        const scope = filters?.scope || "my"; // "my" | "admin"
-        const data =
-          scope === "admin" ? await getAllBookings(filters) : await getMyBookings();
+        const data = await getBookings(filters);
         setBookings(Array.isArray(data) ? data : []);
       } catch (e) {
         setError(
@@ -54,4 +52,3 @@ export function useBookings(initialFilters = {}) {
     setBookings,
   };
 }
-
