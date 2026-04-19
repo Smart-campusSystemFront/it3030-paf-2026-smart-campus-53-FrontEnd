@@ -229,12 +229,20 @@ export default function Layout() {
   const isAdmin = pathname.startsWith('/admin')
   const isDashboard = pathname.startsWith('/dashboard')
   const tightBelowHeader = isBookings || isAdmin || isDashboard
+  /** Same dark canvas as bookings hub so raised admin / bookings shells read clearly. */
+  const shellWideDarkHub = isBookings || isAdmin
   /** Full-height shells (admin / dashboard / bookings): no vertical gap under header — only horizontal gutter. */
   const mainPadding = tightBelowHeader ? '0 12px 0' : '32px 24px'
 
   return (
     <div
-      className={shellWide ? 'min-h-full bg-slate-100 text-slate-900' : 'min-h-full'}
+      className={
+        shellWide
+          ? shellWideDarkHub
+            ? 'min-h-full bg-[#001435] text-slate-900'
+            : 'min-h-full bg-slate-100 text-slate-900'
+          : 'min-h-full'
+      }
       style={
         shellWide
           ? undefined

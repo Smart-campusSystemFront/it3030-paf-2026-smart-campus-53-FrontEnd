@@ -177,20 +177,20 @@ body {
   overflow: hidden;
 }
 
-/* Raised sidebar card */
+/* Raised sidebar card — same core palette / depth as admin dashboard sider */
 .bookings-section .bookings-sidebar-panel {
   display: flex;
   flex-direction: column;
-  width: 230px;
+  width: 240px;
   flex-shrink: 0;
   min-height: 0;
   align-self: stretch;
   border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: linear-gradient(165deg, #063a7d 0%, #00205b 50%, #001a48 100%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: linear-gradient(180deg, #0d5cb8 0%, #084a9a 40%, #063a7d 100%);
   box-shadow:
     0 12px 36px rgba(0, 0, 0, 0.38),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
   overflow: hidden;
   position: relative;
 }
@@ -302,11 +302,106 @@ h2 {
   box-shadow: none !important;
 }
 
-.admin-dashboard-layout .ant-layout-sider,
-.admin-dashboard-layout .ant-layout-sider-children {
+/* Plain Ant siders only — raised card sider uses .admin-sidebar-panel rules below */
+.admin-dashboard-layout .ant-layout-sider:not(.admin-sidebar-panel),
+.admin-dashboard-layout .ant-layout-sider:not(.admin-sidebar-panel) .ant-layout-sider-children {
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
+}
+
+.admin-dashboard-layout .ant-layout-sider.admin-sidebar-panel .ant-layout-sider-children {
+  border: none !important;
+  outline: none !important;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Admin hub: same “raised card on dark canvas” frame as bookings shell */
+.admin-section.admin-shell {
+  display: flex !important;
+  flex-direction: row;
+  align-items: stretch;
+  box-sizing: border-box !important;
+  padding: 12px;
+  gap: 0;
+  background: transparent !important;
+  overflow: hidden;
+}
+
+.admin-section.admin-shell > .admin-dashboard-layout.ant-layout {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  gap: 12px;
+}
+
+.admin-section .admin-sidebar-panel.ant-layout-sider {
+  border-radius: 14px !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  background: linear-gradient(180deg, #0d5cb8 0%, #084a9a 40%, #063a7d 100%) !important;
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+.admin-section .admin-main-panel.ant-layout-content {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  align-self: stretch;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #f8fafc;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.32);
+}
+
+/* Admin sidebar menu — match bookings hub (rounded rows, sky outline on active) */
+.admin-sidebar-nav .ant-menu.ant-menu-dark,
+.admin-sidebar-nav .ant-menu.ant-menu-dark.ant-menu-root.ant-menu-inline {
+  background: transparent !important;
+}
+
+.admin-sidebar-nav .ant-menu-dark.ant-menu-inline .ant-menu-item {
+  border-radius: 10px !important;
+  margin-block: 5px !important;
+  margin-inline: 8px !important;
+  width: calc(100% - 16px) !important;
+  max-width: calc(100% - 16px) !important;
+  height: auto !important;
+  line-height: 1.4 !important;
+  padding-block: 10px !important;
+  padding-inline: 12px !important;
+  border: none !important;
+}
+
+.admin-sidebar-nav .ant-menu-dark .ant-menu-item::after {
+  display: none !important;
+  border: none !important;
+}
+
+.admin-sidebar-nav .ant-menu-dark .ant-menu-item:not(.ant-menu-item-selected) {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.admin-sidebar-nav .ant-menu-dark .ant-menu-item-selected {
+  background: linear-gradient(90deg, rgba(125, 211, 252, 0.22), rgba(56, 189, 248, 0.08)) !important;
+  color: #e0f2fe !important;
+  font-weight: 600 !important;
+  box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.45);
+}
+
+.admin-sidebar-nav .ant-menu-dark .ant-menu-item-selected .ant-menu-title-content,
+.admin-sidebar-nav .ant-menu-dark .ant-menu-item-selected .anticon,
+.admin-sidebar-nav .ant-menu-dark .ant-menu-item-selected a,
+.admin-sidebar-nav .ant-menu-dark .ant-menu-item-selected .ant-menu-item-icon {
+  color: #f0f9ff !important;
+}
+
+.admin-sidebar-nav .ant-menu-dark .ant-menu-item:hover:not(.ant-menu-item-selected) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
 }
 
 .admin-dashboard-layout .ant-layout-content,
@@ -367,21 +462,22 @@ h2 {
 }
 
 .bookings-sidebar-nav .ant-menu-dark .ant-menu-item:not(.ant-menu-item-selected) {
-  color: rgba(254, 254, 254, 0.88) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
 }
 
+/* Active row: align with admin dashboard (sky tint + brand blue label) */
 .bookings-sidebar-nav .ant-menu-dark .ant-menu-item-selected {
-  background: linear-gradient(135deg, #f9bf3b 0%, #e8ad2e 100%) !important;
-  color: #00205b !important;
-  font-weight: 700 !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+  background: linear-gradient(90deg, rgba(125, 211, 252, 0.22), rgba(56, 189, 248, 0.08)) !important;
+  color: #e0f2fe !important;
+  font-weight: 600 !important;
+  box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.35);
 }
 
 .bookings-sidebar-nav .ant-menu-dark .ant-menu-item-selected .ant-menu-title-content,
 .bookings-sidebar-nav .ant-menu-dark .ant-menu-item-selected .anticon,
 .bookings-sidebar-nav .ant-menu-dark .ant-menu-item-selected a,
 .bookings-sidebar-nav .ant-menu-dark .ant-menu-item-selected .ant-menu-item-icon {
-  color: #00205b !important;
+  color: #f0f9ff !important;
 }
 
 .bookings-sidebar-nav .ant-menu-dark .ant-menu-item:hover:not(.ant-menu-item-selected) {
