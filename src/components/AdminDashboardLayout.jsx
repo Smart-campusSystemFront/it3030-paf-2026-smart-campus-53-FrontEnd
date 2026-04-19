@@ -5,6 +5,7 @@ import {
   FileTextOutlined,
   TeamOutlined,
   SettingOutlined,
+  BellOutlined,
 } from '@ant-design/icons'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
@@ -20,6 +21,7 @@ export default function AdminDashboardLayout() {
     if (pathname.startsWith('/admin/users')) return ['users']
     if (pathname.startsWith('/admin/bookings')) return ['bookings']
     if (pathname.startsWith('/admin/tickets')) return ['tickets']
+    if (pathname.startsWith('/admin/notifications')) return ['notifications']
     return ['overview']
   })()
 
@@ -128,6 +130,11 @@ export default function AdminDashboardLayout() {
               icon: <FileTextOutlined />,
               label: <Link to="/admin/tickets" style={{ color: 'inherit', textDecoration: 'none', fontWeight: 500 }}>Tickets</Link>,
             },
+            ...(user?.role === 'ADMIN' ? [{
+              key: 'notifications',
+              icon: <BellOutlined />,
+              label: <Link to="/admin/notifications" style={{ color: 'inherit', textDecoration: 'none', fontWeight: 500 }}>Notifications</Link>,
+            }] : []),
           ]}
         />
 

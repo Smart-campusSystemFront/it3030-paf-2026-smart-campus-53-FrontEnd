@@ -1,58 +1,77 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import axios from '../api/api.js';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { apiRequest } from '../lib/api.js';
+import { getToken } from '../lib/storage.js';
 import { useAuth } from './AuthContext.jsx';
 
-const NotificationContext = createContext();
+const NotificationContext = createContext(null);
 
-export const NotificationProvider = ({ children }) => {
+export function NotificationProvider({ children }) {
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState([]);
-  const { user, token } = useAuth();
 
-  useEffect(() => {
-    if (!user || !token) {
-      setNotifications([]);
-      return;
+  // ── Fetch from REST API ──────────────────────────────────────────────────
+  const refresh = useCallback(async () => {
+    if (!user) return;
+    try {
+      const data = await apiRequest('/api/notifications');
+      setNotifications(data || []);
+    } catch (e) {
+      console.error('Failed to load notifications', e);
     }
+  }, [user]);
 
-    // Connect SSE (We must pass the token as a query param or use EventSourcePolyfill if we need Headers)
-    // Since native EventSource doesn't support headers, we'll append the token to the URL and configure the backend to accept it OR
-    // EventSourcePolyfill allows headers, which is much better for security.
-    // For now, if we use standard axios we're good. Let's just adjust standard EventSource if possible.
-    // Wait, let's use the polyfill if possible, else append ?access_token=token
-    const eventSourceUrl = `http://localhost:8080/api/notifications/subscribe?access_token=${token}`;
-    const eventSource = new EventSource(eventSourceUrl);
-
-    eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      console.log("New Notification:", data);
-      setNotifications((prev) => [data, ...prev]);
-    };
-    
-    eventSource.onerror = (e) => {
-        console.error("SSE Error:", e);
-    };
-
-    return () => eventSource.close();
-  }, [user, token]);
-
+  // Initial load whenever user changes
   useEffect(() => {
-    // Fetch Old Notifications
-    if (!user || !token) return;
+    if (!user) { setNotifications([]); return; }
+    refresh();
+  }, [user, refresh]);
 
-    axios.get("/api/notifications")
-      .then(response => {
-        setNotifications(response.data);
-      })
-      .catch(error => {
-        console.error("Error fetching notifications", error);
-      });
-  }, [user, token]);
+  // ── SSE for real-time push ───────────────────────────────────────────────
+  useEffect(() => {
+    if (!user) return;
+    const token = getToken();
+    if (!token) return;
+
+    const url = `http://localhost:8080/api/notifications/subscribe?access_token=${token}`;
+    const es = new EventSource(url);
+
+    es.onmessage = (event) => {
+      try {
+        const incoming = JSON.parse(event.data);
+        console.log('SSE notification:', incoming);
+        // Prepend and then re-fetch to get DB IDs and full state
+        setNotifications(prev => [incoming, ...prev]);
+      } catch { /* ignore parse errors */ }
+    };
+
+    es.onerror = () => {
+      // SSE will auto-reconnect; no hard failure needed
+    };
+
+    return () => es.close();
+  }, [user]);
+
+  // ── Mark single notification as read ────────────────────────────────────
+  const markOneRead = useCallback(async (id) => {
+    try {
+      await apiRequest(`/api/notifications/${id}/read`, { method: 'PATCH' });
+      setNotifications(prev =>
+        prev.map(n => n.id === id ? { ...n, read: true } : n)
+      );
+    } catch { /* silent */ }
+  }, []);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
-    <NotificationContext.Provider value={{ notifications }}>
+    <NotificationContext.Provider value={{ notifications, unreadCount, refresh, markOneRead }}>
       {children}
     </NotificationContext.Provider>
   );
-};
+}
 
-export const useNotifications = () => useContext(NotificationContext);
+export function useNotifications() {
+  const ctx = useContext(NotificationContext);
+  if (!ctx) throw new Error('useNotifications must be used inside NotificationProvider');
+  return ctx;
+}

@@ -13,6 +13,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { useAuth } from '../context/AuthContext.jsx'
 import { Button } from './ui.jsx'
+import NotificationBell from './NotificationBell.jsx'
 
 function ProfileDropdownMenu() {
   const { user, logout } = useAuth()
@@ -301,7 +302,8 @@ export default function Layout() {
           </Link>
 
           {/* Navigation Area */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {user && <NotificationBell />}
             {user ? (
               <ProfileDropdownMenu />
             ) : (

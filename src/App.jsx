@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext.jsx'
+import { NotificationProvider } from './context/NotificationContext.jsx'
 import Layout from './components/Layout.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 import UserDashboardLayout from './components/UserDashboardLayout.jsx'
@@ -17,6 +18,7 @@ import AdminBookings from './pages/AdminBookings.jsx'
 import BookingsSectionLayout from './components/BookingsSectionLayout.jsx'
 import AdminOverview from './pages/admin/Overview.jsx'
 import AdminTickets from './pages/admin/Tickets.jsx'
+import AdminNotifications from './pages/admin/Notifications.jsx'
 import Profile from './pages/Profile.jsx'
 import AdminUsers from './pages/AdminUsers.jsx'
 import LandingPage from './pages/LandingPage.jsx'
@@ -24,7 +26,8 @@ import LandingPage from './pages/LandingPage.jsx'
 export default function App() {
   return (
     <AuthProvider>
-      <Routes>
+      <NotificationProvider>
+        <Routes>
           <Route element={<Layout />}>
             <Route index element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
@@ -81,10 +84,12 @@ export default function App() {
               <Route path="users" element={<AdminUsers />} />
               <Route path="bookings" element={<AdminBookings />} />
               <Route path="tickets" element={<AdminTickets />} />
+              <Route path="notifications" element={<AdminNotifications />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
-      </Routes>
+        </Routes>
+      </NotificationProvider>
     </AuthProvider>
   )
 }
