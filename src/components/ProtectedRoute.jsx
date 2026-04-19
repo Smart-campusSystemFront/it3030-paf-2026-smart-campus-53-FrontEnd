@@ -9,15 +9,18 @@ export default function ProtectedRoute({ children, requireRole, allowedRoles }) 
     return (
       <div
         style={{
-          minHeight: '50vh',
+          minHeight: '40vh',
           display: 'grid',
           placeItems: 'center',
           flexDirection: 'column',
           gap: 16,
+          background: 'var(--bg-page, #f0f4f8)',
+          color: 'var(--text-primary, #0d1b2a)',
+          borderRadius: 'var(--radius-md, 12px)',
         }}
       >
         <div className="sc-spinner" />
-        <p style={{ marginTop: 16, fontSize: 13, color: 'var(--text-muted)', fontWeight: 500 }}>
+        <p style={{ marginTop: 8, fontSize: 13, color: 'var(--text-muted)', fontWeight: 500 }}>
           Verifying your session…
         </p>
       </div>

@@ -8,8 +8,8 @@ import { Link, Outlet, useLocation } from 'react-router-dom'
 
 const { Sider, Content } = Layout
 
-/** Viewport height under global header + main padding (matches Layout shell). */
-const SHELL_H = 'calc(100vh - 124px)'
+/** Site header 60px; `Layout` main has no vertical padding for `/dashboard/*`. */
+const SHELL_H = 'calc(100vh - 60px)'
 
 export default function UserDashboardLayout() {
   const { pathname } = useLocation()
@@ -27,10 +27,11 @@ export default function UserDashboardLayout() {
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'stretch',
-        borderRadius: 'var(--radius-lg)',
         overflow: 'hidden',
-        border: '1px solid var(--border)',
-        boxShadow: 'var(--shadow-md)',
+        background: 'transparent',
+        border: 'none',
+        boxShadow: 'none',
+        borderRadius: 0,
       }}
     >
       {/* ── Sidebar (fixed height, no scroll) ── */}
@@ -39,8 +40,11 @@ export default function UserDashboardLayout() {
         style={{
           height: '100%',
           maxHeight: '100%',
-          background: 'var(--bg-sidebar)',
+          background: 'var(--bg-sidebar, #001845)',
+          border: 'none',
           borderRight: 'none',
+          outline: 'none',
+          boxShadow: 'none',
           position: 'relative',
           overflow: 'hidden',
           overflowY: 'hidden',

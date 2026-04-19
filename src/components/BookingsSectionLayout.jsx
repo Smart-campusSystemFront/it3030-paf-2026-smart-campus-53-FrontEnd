@@ -9,8 +9,8 @@ import {
 } from '@ant-design/icons'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 
-/** Site header (60px) + `Layout` main padding for `/bookings` (8 + 12). */
-const BOOKINGS_VIEWPORT_OFFSET = 80
+/** Site header (60px); `Layout` main has no vertical padding for `/bookings`. */
+const BOOKINGS_VIEWPORT_OFFSET = 60
 
 export default function BookingsSectionLayout() {
   const { pathname } = useLocation()
@@ -26,32 +26,16 @@ export default function BookingsSectionLayout() {
 
   return (
     <div
+      className="bookings-section bookings-shell"
       style={{
         height: shellH,
         minHeight: shellH,
         maxHeight: shellH,
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'stretch',
         width: '100%',
-        overflow: 'hidden',
-        background: 'var(--bg-page)',
       }}
     >
-      {/* Left nav — same width as workspace Sider, fixed height, no scroll */}
-      <aside
-        style={{
-          width: 230,
-          flexShrink: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          height: '100%',
-          background: 'var(--bg-sidebar, #001845)',
-          position: 'relative',
-          overflowX: 'hidden',
-          overflowY: 'auto',
-        }}
-      >
+      {/* Left nav — card panel, visually separated from outer frame */}
+      <aside className="bookings-sidebar-nav bookings-sidebar-panel">
         <div
           style={{
             padding: '16px 18px 10px',
@@ -209,21 +193,7 @@ export default function BookingsSectionLayout() {
         />
       </aside>
 
-      <div
-        style={{
-          flex: 1,
-          minWidth: 0,
-          minHeight: 0,
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          overflowX: 'hidden',
-          overflowY: 'auto',
-          WebkitOverflowScrolling: 'touch',
-          paddingLeft: 12,
-        }}
-        className="animate-fade-up"
-      >
+      <div className="bookings-main-panel animate-fade-up flex min-h-0 flex-1 flex-col bg-transparent">
         <Outlet />
       </div>
     </div>

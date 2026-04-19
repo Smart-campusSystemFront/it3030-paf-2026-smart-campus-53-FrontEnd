@@ -223,7 +223,12 @@ export default function Layout() {
     || pathname.startsWith('/bookings')
     || pathname.startsWith('/resources')
     || pathname.startsWith('/admin')
-  const isBookingsShell = pathname.startsWith('/bookings') || pathname.startsWith('/resources')
+  const isBookings = pathname.startsWith('/bookings')
+  const isAdmin = pathname.startsWith('/admin')
+  const isDashboard = pathname.startsWith('/dashboard')
+  const tightBelowHeader = isBookings || isAdmin || isDashboard
+  /** Full-height shells (admin / dashboard / bookings): no vertical gap under header — only horizontal gutter. */
+  const mainPadding = tightBelowHeader ? '0 12px 0' : '32px 24px'
 
   return (
     <div style={{ minHeight: '100%', background: 'var(--bg-page)', color: 'var(--text-primary)' }}>
@@ -326,9 +331,9 @@ export default function Layout() {
       {/* ── Main Content ── */}
       <main
         style={{
-          maxWidth: isBookingsShell ? '100%' : shellWide ? 1600 : 1280,
+          maxWidth: tightBelowHeader ? '100%' : shellWide ? 1600 : 1280,
           margin: '0 auto',
-          padding: isBookingsShell ? '8px 12px 12px' : '32px 24px',
+          padding: mainPadding,
         }}
       >
         <div className="animate-fade-up">

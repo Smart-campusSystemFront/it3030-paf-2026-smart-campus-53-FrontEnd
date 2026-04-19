@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { Loader2 } from "lucide-react";
+import { Calendar, Loader2, Users } from "lucide-react";
 import toast from "react-hot-toast";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { createBooking, getActiveResources } from "../api/bookingApi";
@@ -69,10 +69,17 @@ function fmtDuration(mins) {
   return `${m} mins`;
 }
 
+function isYmd(s) {
+  return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
+}
+
 export default function BookingForm() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const prefillDate = searchParams.get("date"); // YYYY-MM-DD
+
+  /** Drives slot grid as soon as user picks a date (independent of datetime-local). */
+  const [slotDate, setSlotDate] = useState(() => (isYmd(prefillDate) ? prefillDate : ""));
 
   const [resources, setResources] = useState([]);
   const [resourcesLoading, setResourcesLoading] = useState(true);
@@ -115,6 +122,36 @@ export default function BookingForm() {
   const durationMins = useMemo(() => minutesBetween(startTime, endTime), [startTime, endTime]);
   const attendeesExceed =
     selectedResource?.capacity != null && expectedAttendees > selectedResource.capacity;
+
+  const minBookingDate = useMemo(() => {
+    const t = new Date();
+    const y = t.getFullYear();
+    const m = String(t.getMonth() + 1).padStart(2, "0");
+    const d = String(t.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }, []);
+
+  useEffect(() => {
+    if (isYmd(prefillDate)) setSlotDate(prefillDate);
+  }, [prefillDate]);
+
+  /** Keep calendar date in sync when start time is edited via datetime fields. */
+  useEffect(() => {
+    if (!startTime || startTime.length < 10) return;
+    const d = startTime.slice(0, 10);
+    if (!isYmd(d)) return;
+    setSlotDate((prev) => (prev === d ? prev : d));
+  }, [startTime]);
+
+  function onSlotDateChange(e) {
+    const next = e.target.value;
+    setSlotDate(next);
+    const st = form.getValues("startTime");
+    if (st && st.length >= 10 && st.slice(0, 10) !== next) {
+      form.setValue("startTime", "", { shouldValidate: true });
+      form.setValue("endTime", "", { shouldValidate: true });
+    }
+  }
 
   useEffect(() => {
     let mounted = true;
@@ -238,16 +275,16 @@ export default function BookingForm() {
   }
 
   return (
-    <div className="min-h-0 bg-slate-50 pb-8">
-      <div className="mx-auto max-w-6xl px-4 pt-2 pb-6">
+    <div className="flex min-h-full w-full flex-1 flex-col">
+      <div className="mx-auto w-full max-w-6xl flex-1 px-4 pt-2 pb-12">
         <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-slate-900">New Booking</h1>
-          <p className="mt-1 text-sm text-slate-600">Request a resource booking.</p>
+          <h1 className="text-2xl font-semibold bookings-chrome-title">New Booking</h1>
+          <p className="mt-1 text-sm bookings-chrome-subtle">Request a resource booking.</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           <div className="lg:col-span-3 space-y-6">
-            <div className="rounded-2xl bg-white border border-slate-100 shadow-sm p-6 space-y-4">
+            <div className="rounded-2xl bookings-card border shadow-sm p-6 space-y-4">
               <div>
                 <h2 className="text-lg font-semibold text-slate-900">Select Resource</h2>
                 <p className="text-sm text-slate-600">Choose an ACTIVE resource.</p>
@@ -267,7 +304,7 @@ export default function BookingForm() {
                 <select
                   id="resourceId"
                   aria-label="Select resource"
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-white disabled:bg-slate-50"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none focus:ring-2 focus:ring-[#F9BF3B] transition-all bg-[#fefefe] disabled:bg-slate-100"
                   disabled={resourcesLoading}
                   {...form.register("resourceId")}
                 >
@@ -316,24 +353,60 @@ export default function BookingForm() {
               )}
             </div>
 
-            <div className="rounded-2xl bg-white border border-slate-100 shadow-sm p-6 space-y-4">
+            <div className="rounded-2xl bookings-card border shadow-sm p-6 space-y-4">
               <div>
                 <h2 className="text-lg font-semibold text-slate-900">Date &amp; Time</h2>
-                <p className="text-sm text-slate-600">Pick a time slot.</p>
+                <p className="text-sm text-slate-600">
+                  Choose the <span className="font-medium text-slate-800">booking date</span> first — hourly slots appear
+                  right away. Booked or past slots are disabled; tap one to see &quot;Not available&quot;.
+                </p>
               </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700" htmlFor="bookingDate">
+                  Booking date
+                </label>
+                <input
+                  id="bookingDate"
+                  type="date"
+                  min={minBookingDate}
+                  value={slotDate}
+                  onChange={onSlotDateChange}
+                  aria-label="Booking date for time slots"
+                  className="w-full max-w-xs rounded-xl border border-slate-200 bg-[#fefefe] px-3 py-2 text-sm text-slate-800 outline-none focus:ring-2 focus:ring-[#F9BF3B] transition-all"
+                />
+              </div>
+
+              <SmartTimeSlots
+                bookingsHub
+                resourceId={resourceId ? Number(resourceId) : null}
+                selectedDate={slotDate.trim() ? slotDate : null}
+                availabilityStart="06:00"
+                availabilityEnd="22:00"
+                onSelectSlot={(s, e) => {
+                  form.setValue("startTime", s, { shouldValidate: true });
+                  form.setValue("endTime", e, { shouldValidate: true });
+                }}
+              />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-700" htmlFor="startTime">
                     Start
                   </label>
-                  <input
-                    id="startTime"
-                    type="datetime-local"
-                    aria-label="Start date and time"
-                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-white"
-                    {...form.register("startTime")}
-                  />
+                  <div className="relative">
+                    <Calendar
+                      className="pointer-events-none absolute left-3 top-1/2 z-10 size-[18px] -translate-y-1/2 text-[#00205B]"
+                      aria-hidden
+                    />
+                    <input
+                      id="startTime"
+                      type="datetime-local"
+                      aria-label="Start date and time"
+                      className="w-full rounded-xl border border-slate-200 bg-[#fefefe] py-2 pl-10 pr-10 text-sm text-slate-800 outline-none focus:ring-2 focus:ring-[#F9BF3B] transition-all"
+                      {...form.register("startTime")}
+                    />
+                  </div>
                   {form.formState.errors.startTime && (
                     <p className="text-xs font-medium text-rose-600">
                       {form.formState.errors.startTime.message}
@@ -345,13 +418,19 @@ export default function BookingForm() {
                   <label className="text-sm font-medium text-slate-700" htmlFor="endTime">
                     End
                   </label>
-                  <input
-                    id="endTime"
-                    type="datetime-local"
-                    aria-label="End date and time"
-                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-white"
-                    {...form.register("endTime")}
-                  />
+                  <div className="relative">
+                    <Calendar
+                      className="pointer-events-none absolute left-3 top-1/2 z-10 size-[18px] -translate-y-1/2 text-[#00205B]"
+                      aria-hidden
+                    />
+                    <input
+                      id="endTime"
+                      type="datetime-local"
+                      aria-label="End date and time"
+                      className="w-full rounded-xl border border-slate-200 bg-[#fefefe] py-2 pl-10 pr-10 text-sm text-slate-800 outline-none focus:ring-2 focus:ring-[#F9BF3B] transition-all"
+                      {...form.register("endTime")}
+                    />
+                  </div>
                   {form.formState.errors.endTime && (
                     <p className="text-xs font-medium text-rose-600">
                       {form.formState.errors.endTime.message}
@@ -383,20 +462,9 @@ export default function BookingForm() {
                   </p>
                 </div>
               )}
-
-              <SmartTimeSlots
-                resourceId={resourceId ? Number(resourceId) : null}
-                selectedDate={startTime ? startTime.slice(0, 10) : null}
-                availabilityStart="06:00"
-                availabilityEnd="22:00"
-                onSelectSlot={(s, e) => {
-                  form.setValue("startTime", s, { shouldValidate: true });
-                  form.setValue("endTime", e, { shouldValidate: true });
-                }}
-              />
             </div>
 
-            <div className="rounded-2xl bg-white border border-slate-100 shadow-sm p-6 space-y-4">
+            <div className="rounded-2xl bookings-card border shadow-sm p-6 space-y-4">
               <div>
                 <h2 className="text-lg font-semibold text-slate-900">Booking Details</h2>
                 <p className="text-sm text-slate-600">Provide purpose and attendees.</p>
@@ -410,7 +478,7 @@ export default function BookingForm() {
                   <textarea
                     id="purpose"
                     aria-label="Booking purpose"
-                    className="w-full min-h-[120px] resize-none rounded-xl border border-slate-200 p-3 text-sm text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                    className="w-full min-h-[120px] resize-none rounded-xl border border-slate-200 p-3 text-sm text-slate-800 outline-none focus:ring-2 focus:ring-[#F9BF3B] transition-all bg-[#fefefe]"
                     maxLength={500}
                     placeholder="e.g., Project meeting..."
                     {...form.register("purpose")}
@@ -428,15 +496,23 @@ export default function BookingForm() {
                 <label className="text-sm font-medium text-slate-700" htmlFor="expectedAttendees">
                   Expected Attendees
                 </label>
-                <input
-                  id="expectedAttendees"
-                  type="number"
-                  min={1}
-                  max={500}
-                  aria-label="Expected attendees"
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
-                  {...form.register("expectedAttendees")}
-                />
+                <div className="relative">
+                  <input
+                    id="expectedAttendees"
+                    type="number"
+                    min={1}
+                    max={500}
+                    aria-label="Expected attendees"
+                    className="w-full rounded-xl border border-slate-200 bg-[#fefefe] py-2 pl-3 pr-11 text-sm text-slate-800 outline-none focus:ring-2 focus:ring-[#F9BF3B] transition-all [appearance:textfield] [&::-webkit-inner-spin-button]:opacity-100 [&::-webkit-outer-spin-button]:opacity-100"
+                    {...form.register("expectedAttendees")}
+                  />
+                  <span
+                    className="pointer-events-none absolute right-3 top-1/2 z-10 -translate-y-1/2 text-[#00205B]"
+                    aria-hidden
+                  >
+                    <Users size={18} strokeWidth={2} />
+                  </span>
+                </div>
                 {form.formState.errors.expectedAttendees && (
                   <p className="text-xs font-medium text-rose-600">
                     {form.formState.errors.expectedAttendees.message}
@@ -447,7 +523,7 @@ export default function BookingForm() {
           </div>
 
           <div className="lg:col-span-2">
-            <div className="lg:sticky lg:top-6 rounded-2xl bg-white border border-slate-100 shadow-sm p-6 space-y-4">
+            <div className="lg:sticky lg:top-6 rounded-2xl bookings-card border shadow-sm p-6 space-y-4">
               <h2 className="text-lg font-semibold text-slate-900">Booking Summary</h2>
 
               <div className="space-y-3 text-sm">
@@ -511,7 +587,7 @@ export default function BookingForm() {
                 type="button"
                 onClick={form.handleSubmit(onSubmit, onInvalid)}
                 disabled={submitting}
-                className="w-full rounded-xl px-4 py-2 font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
+                className="bookings-btn w-full rounded-xl px-4 py-2 font-medium transition-all disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
                 aria-label="Request booking"
               >
                 {submitting && <Loader2 size={18} className="animate-spin" />}

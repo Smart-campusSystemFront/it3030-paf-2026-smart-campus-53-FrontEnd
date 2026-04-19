@@ -1,1 +1,10 @@
 @import "tailwindcss";
+
+/* Native datetime-local: keep calendar control visible (Chrome / Edge / Safari). */
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 1;
+}
+input[type="datetime-local"] {
+  color-scheme: light;
+}
