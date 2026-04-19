@@ -45,6 +45,68 @@
   margin: 12px 0;
 }
 
+.backendOffline {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin: 12px 0 18px;
+  background: var(--code-bg);
+  text-align: left;
+}
+
+.backendOfflineTitle {
+  margin: 0 0 10px;
+  font-size: 1.15rem;
+  color: var(--text-h);
+}
+
+.backendOfflineLead {
+  margin: 0 0 10px;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.backendOfflineCmd {
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.45;
+  overflow: auto;
+  color: var(--text-h);
+}
+
+.backendOfflineHint {
+  margin: 0;
+  font-size: 14px;
+}
+
+.backendOfflineWarn {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-bg);
+  color: var(--text-h);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.backendOfflineWarn kbd {
+  font-family: var(--mono);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.backendOffline a {
+  color: var(--accent);
+}
+
 .form {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
