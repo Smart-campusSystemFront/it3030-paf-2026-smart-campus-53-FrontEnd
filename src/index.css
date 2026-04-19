@@ -1,52 +1,16 @@
-@import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
-
-/* ─────────────────────────────────────────────
-   DESIGN TOKENS
-───────────────────────────────────────────── */
+/* Global base — aligned with brand palette (Deep Navy canvas, Silver type, Azure links) */
 :root {
-  /* Brand palette */
-  --c-navy:      #00205B;   /* deep navy – primary brand */
-  --c-blue:      #0091FF;   /* electric blue – accent / CTA */
-  --c-amber:     #F9BF3B;   /* amber gold – highlight / badge */
-  --c-slate-dk:  #343E43;   /* dark slate – headings / dark bg */
-  --c-slate-lt:  #C9CEDC;   /* light slate – borders / muted text */
-/* Brand palette — "color palette last final.pdf" */
-:root {
-  --palette-navy: #00205b;
-  --palette-silver: #fefefe;
-  --palette-gold: #f9bf3b;
-  --palette-azure: #0091ff;
-  --palette-black: #060707;
+  --navy: #00205b;
+  --silver: #fefefe;
+  --azure: #0091ff;
+  --amber: #f9bf3b;
+  --rich-black: #060707;
 
-  /* 60% — canvas */
-  --bg: var(--palette-navy);
-  /* Body / secondary copy on navy */
-  --text: rgba(254, 254, 254, 0.88);
-  --text-muted: rgba(254, 254, 254, 0.72);
-  /* Headings on canvas */
-  --text-h: var(--palette-silver);
-  /* 30% — light surfaces (cards) */
-  --surface: var(--palette-silver);
-  --surface-text: var(--palette-black);
-  --surface-text-muted: rgba(6, 7, 7, 0.58);
-  /* Dividers on navy vs on cards */
-  --border: rgba(254, 254, 254, 0.14);
-  --border-surface: rgba(6, 7, 7, 0.12);
-  --code-bg: rgba(0, 0, 0, 0.2);
-  /* 10% — accent CTA */
-  --accent: var(--palette-gold);
-  --accent-text: var(--palette-black);
-  --accent-hover: #e5ad2a;
-  --accent-bg: rgba(249, 191, 59, 0.18);
-  --accent-border: rgba(249, 191, 59, 0.55);
-  /* Azure — links, hovers, focus */
-  --link: var(--palette-azure);
-  --link-hover: #47a8ff;
-  /* Rich black — elevation */
-  --shadow:
-    0 12px 28px rgba(6, 7, 7, 0.35),
-    0 4px 10px rgba(6, 7, 7, 0.22);
+  --text: var(--silver);
+  --text-h: var(--silver);
+  --bg: var(--navy);
+  --border: rgba(0, 145, 255, 0.22);
+  --accent: var(--azure);
 
   /* Derived shades */
   --c-navy-80:   #1a3a6e;
@@ -54,12 +18,8 @@
   --c-blue-light:#e6f4ff;
   --c-amber-light:#fffbeb;
 
-  /* Surfaces */
-  --bg-page:    #f0f4f8;
-  --bg-card:    #ffffff;
-  --bg-sidebar: #001845;   /* ultra-deep navy for sidebar */
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
+  font: 16px/145% var(--sans);
+  letter-spacing: 0.02em;
   color-scheme: dark;
   color: var(--text);
   background: var(--bg);
@@ -110,6 +70,8 @@ body {
   margin: 0;
   background: var(--bg-page);
   color: var(--text-primary);
+  background: var(--bg);
+  color: var(--text);
 }
 
 /* ─────────────────────────────────────────────
@@ -171,6 +133,15 @@ body {
 #root {
   min-height: 100svh;
   background: var(--bg);
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  text-align: initial;
+  border: none;
+  box-sizing: border-box;
 }
 
 h1,
@@ -196,15 +167,15 @@ h2 {
 }
 .ant-menu-item:hover:not(.ant-menu-item-selected) {
   background: rgba(0,145,255,.06) !important;
+h1 {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  letter-spacing: -0.02em;
+  margin: 0 0 0.75rem;
+}
 
 h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
+  font-size: 1.1rem;
+  margin: 0 0 0.5rem;
 }
 
 p {
@@ -264,4 +235,12 @@ a {
 
 a:hover {
   color: var(--link-hover);
+code {
+  font-family: var(--mono);
+  font-size: 0.9em;
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  background: rgba(6, 7, 7, 0.35);
+  border: 1px solid var(--border);
+  color: var(--silver);
 }

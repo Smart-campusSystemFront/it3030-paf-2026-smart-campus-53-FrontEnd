@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
@@ -6,9 +6,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      // Proxied to Spring Boot. Use 127.0.0.1 (not "localhost") to avoid IPv6 ::1 vs IPv4 mismatch on Windows.
       '/api': {
-        target: 'http://127.0.0.1:8080',
+        target: 'http://localhost:8080',
         changeOrigin: true,
       },
     },
@@ -20,5 +19,9 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: './src/setupTests.js',
   },
 })

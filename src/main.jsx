@@ -2,8 +2,10 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App as AntdApp, ConfigProvider } from 'antd'
 import enUS from 'antd/locale/en_US'
+import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
+import { ToastProvider } from './context/ToastContext.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -86,5 +88,10 @@ createRoot(document.getElementById('root')).render(
         <App />
       </AntdApp>
     </ConfigProvider>
+    <BrowserRouter>
+      <ToastProvider>
+        <App />
+      </ToastProvider>
+    </BrowserRouter>
   </StrictMode>,
 )
