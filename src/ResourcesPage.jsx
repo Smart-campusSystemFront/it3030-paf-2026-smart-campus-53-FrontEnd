@@ -65,7 +65,7 @@ export default function ResourcesPage() {
     e.preventDefault()
     setError('')
 
-    const payload = {
+    const basePayload = {
       name: form.name.trim(),
       type: form.type,
       capacity:
@@ -73,15 +73,17 @@ export default function ResourcesPage() {
           ? null
           : Number(form.capacity),
       location: form.location.trim(),
-      availability: form.availability.trim(),
       status: form.status,
     }
 
     try {
       if (editingId) {
-        await updateResource(editingId, payload)
+        await updateResource(editingId, {
+          ...basePayload,
+          availability: form.availability.trim(),
+        })
       } else {
-        await createResource(payload)
+        await createResource(basePayload)
       }
       setForm(emptyForm())
       setEditingId(null)
@@ -195,17 +197,19 @@ export default function ResourcesPage() {
             />
           </label>
 
-          <label>
-            <span>Availability</span>
-            <input
-              value={form.availability}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, availability: e.target.value }))
-              }
-              placeholder="08:00-17:00"
-              required
-            />
-          </label>
+          {editingId ? (
+            <label>
+              <span>Availability</span>
+              <input
+                value={form.availability}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, availability: e.target.value }))
+                }
+                placeholder="08:00-17:00"
+                required
+              />
+            </label>
+          ) : null}
 
           <label>
             <span>Status</span>
