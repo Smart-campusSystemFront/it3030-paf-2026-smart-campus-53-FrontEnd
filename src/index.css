@@ -11,6 +11,42 @@
   --c-amber:     #F9BF3B;   /* amber gold – highlight / badge */
   --c-slate-dk:  #343E43;   /* dark slate – headings / dark bg */
   --c-slate-lt:  #C9CEDC;   /* light slate – borders / muted text */
+/* Brand palette — "color palette last final.pdf" */
+:root {
+  --palette-navy: #00205b;
+  --palette-silver: #fefefe;
+  --palette-gold: #f9bf3b;
+  --palette-azure: #0091ff;
+  --palette-black: #060707;
+
+  /* 60% — canvas */
+  --bg: var(--palette-navy);
+  /* Body / secondary copy on navy */
+  --text: rgba(254, 254, 254, 0.88);
+  --text-muted: rgba(254, 254, 254, 0.72);
+  /* Headings on canvas */
+  --text-h: var(--palette-silver);
+  /* 30% — light surfaces (cards) */
+  --surface: var(--palette-silver);
+  --surface-text: var(--palette-black);
+  --surface-text-muted: rgba(6, 7, 7, 0.58);
+  /* Dividers on navy vs on cards */
+  --border: rgba(254, 254, 254, 0.14);
+  --border-surface: rgba(6, 7, 7, 0.12);
+  --code-bg: rgba(0, 0, 0, 0.2);
+  /* 10% — accent CTA */
+  --accent: var(--palette-gold);
+  --accent-text: var(--palette-black);
+  --accent-hover: #e5ad2a;
+  --accent-bg: rgba(249, 191, 59, 0.18);
+  --accent-border: rgba(249, 191, 59, 0.55);
+  /* Azure — links, hovers, focus */
+  --link: var(--palette-azure);
+  --link-hover: #47a8ff;
+  /* Rich black — elevation */
+  --shadow:
+    0 12px 28px rgba(6, 7, 7, 0.35),
+    0 4px 10px rgba(6, 7, 7, 0.22);
 
   /* Derived shades */
   --c-navy-80:   #1a3a6e;
@@ -22,6 +58,15 @@
   --bg-page:    #f0f4f8;
   --bg-card:    #ffffff;
   --bg-sidebar: #001845;   /* ultra-deep navy for sidebar */
+  font: 18px/145% var(--sans);
+  letter-spacing: 0.18px;
+  color-scheme: dark;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 
   /* Text */
   --text-primary:   #0d1b2a;
@@ -122,6 +167,16 @@ body {
 }
 .gradient-amber {
   background: linear-gradient(135deg, var(--c-amber) 0%, #f59e0b 100%);
+#root {
+  min-height: 100svh;
+  background: var(--bg);
+}
+
+h1,
+h2 {
+  font-family: var(--heading);
+  font-weight: 600;
+  color: var(--text-h);
 }
 
 /* ─────────────────────────────────────────────
@@ -140,6 +195,19 @@ body {
 }
 .ant-menu-item:hover:not(.ant-menu-item-selected) {
   background: rgba(0,145,255,.06) !important;
+
+h2 {
+  font-size: 24px;
+  line-height: 118%;
+  letter-spacing: -0.24px;
+  margin: 0 0 8px;
+  @media (max-width: 1024px) {
+    font-size: 20px;
+  }
+}
+
+p {
+  margin: 0;
 }
 
 /* Table rows hover */
@@ -187,4 +255,12 @@ body {
   border-top-color: var(--c-blue);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
+}
+
+a {
+  color: var(--link);
+}
+
+a:hover {
+  color: var(--link-hover);
 }
