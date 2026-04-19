@@ -31,8 +31,8 @@ export default function BookingScanner() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-3xl px-4 py-8 space-y-6">
+    <div className="min-h-0 bg-slate-50">
+      <div className="mx-auto max-w-3xl px-4 pt-2 pb-6 space-y-4">
         <div className="rounded-2xl bg-white border border-slate-100 shadow-sm p-8 space-y-2">
           <div className="inline-flex items-center gap-2 text-indigo-700 font-semibold text-sm uppercase tracking-wide">
             <ScanLine size={18} />

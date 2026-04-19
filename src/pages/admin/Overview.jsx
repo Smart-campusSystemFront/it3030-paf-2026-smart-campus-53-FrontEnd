@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faUsers, faTicket, faArrowRight } from '@fortawesome/free-solid-svg-icons'
+import { faUsers, faTicket, faArrowRight, faCalendarCheck } from '@fortawesome/free-solid-svg-icons'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext.jsx'
 
@@ -13,6 +13,17 @@ const MODULE_CARDS = [
     title: 'User Management',
     description: 'Create accounts, update roles (USER / ADMIN / TECHNICIAN), toggle active status, and remove users.',
     stat: 'Full CRUD',
+    statColor: 'var(--c-blue)',
+  },
+  {
+    to: '/admin/bookings',
+    icon: faCalendarCheck,
+    color: '#0091FF',
+    bg: 'var(--c-blue-light)',
+    border: '#bae6fd',
+    title: 'Booking Management',
+    description: 'Review booking requests, approve or reject with reasons, export CSV, and monitor peak usage.',
+    stat: 'Operations',
     statColor: 'var(--c-blue)',
   },
   {

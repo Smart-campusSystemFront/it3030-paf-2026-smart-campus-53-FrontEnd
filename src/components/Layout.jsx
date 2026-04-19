@@ -6,9 +6,10 @@ import {
   faGauge,
   faUser,
   faUsers,
-  faBuilding,
   faChevronDown,
-  faUserCircle
+  faCalendarCheck,
+  faChartLine,
+  faClipboardList,
 } from '@fortawesome/free-solid-svg-icons'
 import { useAuth } from '../context/AuthContext.jsx'
 import { Button } from './ui.jsx'
@@ -128,6 +129,36 @@ function ProfileDropdownMenu() {
             >
               <FontAwesomeIcon icon={faGauge} style={{ width: 16 }} /> User Dashboard
             </Link>
+            <Link
+              to="/bookings"
+              onClick={() => setIsOpen(false)}
+              style={menuItemStyle}
+              onMouseEnter={menuItemHoverStyle}
+              onMouseLeave={menuItemLeaveStyle}
+            >
+              <FontAwesomeIcon icon={faChartLine} style={{ width: 16 }} /> Bookings
+            </Link>
+            <Link
+              to="/bookings/my"
+              onClick={() => setIsOpen(false)}
+              style={menuItemStyle}
+              onMouseEnter={menuItemHoverStyle}
+              onMouseLeave={menuItemLeaveStyle}
+            >
+              <FontAwesomeIcon icon={faCalendarCheck} style={{ width: 16 }} /> My Booking
+            </Link>
+            {['ADMIN', 'TECHNICIAN'].includes(user?.role) && (
+              <Link
+                to="/admin/bookings"
+                onClick={() => setIsOpen(false)}
+                style={{ ...menuItemStyle, color: 'var(--c-amber)', fontWeight: 600 }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(249,191,59,0.08)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+              >
+                <FontAwesomeIcon icon={faClipboardList} style={{ width: 16, color: 'var(--c-amber)' }} />
+                Booking Management
+              </Link>
+            )}
             {['ADMIN', 'TECHNICIAN'].includes(user?.role) && (
               <Link
                 to="/admin/overview"
@@ -187,7 +218,11 @@ const menuItemLeaveStyle = (e) => {
 export default function Layout() {
   const { user } = useAuth()
   const { pathname } = useLocation()
-  const shellWide = pathname.startsWith('/dashboard') || pathname.startsWith('/admin')
+  const shellWide =
+    pathname.startsWith('/dashboard')
+    || pathname.startsWith('/bookings')
+    || pathname.startsWith('/admin')
+  const isBookings = pathname.startsWith('/bookings')
 
   return (
     <div style={{ minHeight: '100%', background: 'var(--bg-page)', color: 'var(--text-primary)' }}>
@@ -290,9 +325,9 @@ export default function Layout() {
       {/* ── Main Content ── */}
       <main
         style={{
-          maxWidth: shellWide ? 1600 : 1280,
+          maxWidth: isBookings ? '100%' : shellWide ? 1600 : 1280,
           margin: '0 auto',
-          padding: '32px 24px',
+          padding: isBookings ? '8px 12px 12px' : '32px 24px',
         }}
       >
         <div className="animate-fade-up">

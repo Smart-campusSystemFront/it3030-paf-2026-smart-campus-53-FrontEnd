@@ -1,5 +1,6 @@
 import { Layout, Menu } from 'antd'
 import {
+  CalendarOutlined,
   DashboardOutlined,
   FileTextOutlined,
   TeamOutlined,
@@ -10,11 +11,14 @@ import { useAuth } from '../context/AuthContext.jsx'
 
 const { Sider, Content } = Layout
 
+const SHELL_H = 'calc(100vh - 124px)'
+
 export default function AdminDashboardLayout() {
   const { user } = useAuth()
   const { pathname } = useLocation()
   const selectedKeys = (() => {
-    if (pathname.startsWith('/admin/users'))   return ['users']
+    if (pathname.startsWith('/admin/users')) return ['users']
+    if (pathname.startsWith('/admin/bookings')) return ['bookings']
     if (pathname.startsWith('/admin/tickets')) return ['tickets']
     return ['overview']
   })()
@@ -22,21 +26,30 @@ export default function AdminDashboardLayout() {
   return (
     <Layout
       style={{
-        minHeight: 'calc(100vh - 124px)',
+        height: SHELL_H,
+        minHeight: SHELL_H,
+        maxHeight: SHELL_H,
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'stretch',
         borderRadius: 'var(--radius-lg)',
         overflow: 'hidden',
         border: '1px solid var(--border)',
         boxShadow: 'var(--shadow-md)',
       }}
     >
-      {/* ── Admin Sidebar ── */}
+      {/* ── Admin Sidebar (fixed height, no scroll) ── */}
       <Sider
         width={240}
         style={{
+          height: '100%',
+          maxHeight: '100%',
           background: 'var(--c-navy)',
           borderRight: 'none',
           position: 'relative',
           overflow: 'hidden',
+          overflowY: 'hidden',
+          flexShrink: 0,
         }}
       >
         {/* Sidebar header with amber accent badge */}
@@ -93,7 +106,7 @@ export default function AdminDashboardLayout() {
           mode="inline"
           theme="dark"
           selectedKeys={selectedKeys}
-          style={{ background: 'transparent', border: 'none', padding: '4px 10px' }}
+          style={{ background: 'transparent', border: 'none', padding: '4px 10px', overflow: 'hidden' }}
           items={[
             {
               key: 'overview',
@@ -105,6 +118,11 @@ export default function AdminDashboardLayout() {
               icon: <TeamOutlined />,
               label: <Link to="/admin/users" style={{ color: 'inherit', textDecoration: 'none', fontWeight: 500 }}>User Management</Link>,
             }] : []),
+            {
+              key: 'bookings',
+              icon: <CalendarOutlined />,
+              label: <Link to="/admin/bookings" style={{ color: 'inherit', textDecoration: 'none', fontWeight: 500 }}>Booking Management</Link>,
+            },
             {
               key: 'tickets',
               icon: <FileTextOutlined />,
@@ -140,12 +158,18 @@ export default function AdminDashboardLayout() {
         />
       </Sider>
 
-      {/* ── Content ── */}
+      {/* ── Content (only this pane scrolls) ── */}
       <Content
         style={{
+          flex: 1,
+          minWidth: 0,
+          minHeight: 0,
+          height: '100%',
           background: 'var(--bg-page)',
           padding: 28,
-          minHeight: 480,
+          overflowX: 'hidden',
+          overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch',
         }}
       >
         <div className="animate-fade-up">

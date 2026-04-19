@@ -34,8 +34,10 @@ const STAT_CARDS = [
 ]
 
 const SHORTCUT_LINKS = [
-  { to: '/profile',           label: 'Manage Profile',  primary: true },
-  { to: '/dashboard/tickets', label: 'My Tickets',      primary: false },
+  { to: '/profile', label: 'Manage Profile', primary: true },
+  { to: '/bookings', label: 'Bookings', primary: false },
+  { to: '/bookings/my', label: 'My Booking', primary: false },
+  { to: '/dashboard/tickets', label: 'My Tickets', primary: false },
 ]
 
 const FEATURE_CARDS = [
@@ -170,22 +172,38 @@ export default function UserDashboardOverview() {
             </Link>
           ))}
           {['ADMIN', 'TECHNICIAN'].includes(user.role) && (
-            <Link
-              to="/admin/overview"
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                borderRadius: 'var(--radius-sm)', padding: '8px 16px',
-                fontSize: 13, fontWeight: 600, textDecoration: 'none',
-                background: 'linear-gradient(135deg,var(--c-amber),#f59e0b)',
-                color: 'var(--c-navy)', border: 'none',
-                boxShadow: '0 4px 10px rgb(249 191 59/.25)',
-                transition: 'all var(--duration) var(--ease)',
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)' }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
-            >
-              {user.role === 'ADMIN' ? 'Admin Dashboard' : 'Tech Dashboard'}
-            </Link>
+            <>
+              <Link
+                to="/admin/bookings"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  borderRadius: 'var(--radius-sm)', padding: '8px 16px',
+                  fontSize: 13, fontWeight: 600, textDecoration: 'none',
+                  background: '#fff', color: 'var(--c-navy)', border: '1.5px solid var(--c-amber)',
+                  transition: 'all var(--duration) var(--ease)',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
+              >
+                Booking Management
+              </Link>
+              <Link
+                to="/admin/overview"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  borderRadius: 'var(--radius-sm)', padding: '8px 16px',
+                  fontSize: 13, fontWeight: 600, textDecoration: 'none',
+                  background: 'linear-gradient(135deg,var(--c-amber),#f59e0b)',
+                  color: 'var(--c-navy)', border: 'none',
+                  boxShadow: '0 4px 10px rgb(249 191 59/.25)',
+                  transition: 'all var(--duration) var(--ease)',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
+              >
+                {user.role === 'ADMIN' ? 'Admin Dashboard' : 'Tech Dashboard'}
+              </Link>
+            </>
           )}
         </div>
       </div>

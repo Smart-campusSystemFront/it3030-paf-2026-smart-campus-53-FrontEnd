@@ -96,7 +96,7 @@ export default function BookingDashboard() {
   );
 
   return (
-    <div className="p-6 lg:p-8 max-w-6xl mx-auto space-y-8">
+    <div className="px-4 pt-2 pb-6 lg:px-5 lg:pt-3 max-w-6xl mx-auto space-y-6">
       <header className="rounded-2xl bg-white border border-slate-100 shadow-sm p-6 lg:p-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
         <div className="space-y-3">
           <div className="inline-flex items-center gap-2 rounded-full bg-indigo-50 text-indigo-700 px-3 py-1 text-xs font-semibold border border-indigo-100">
@@ -112,7 +112,7 @@ export default function BookingDashboard() {
         </div>
         <div className="flex flex-wrap gap-3 shrink-0">
           <Link
-            to="/booking/new"
+            to="/bookings/new"
             className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition-colors"
           >
             <CalendarPlus size={18} />
@@ -120,7 +120,7 @@ export default function BookingDashboard() {
             <ArrowRight size={16} />
           </Link>
           <Link
-            to="/booking/scanner"
+            to="/bookings/scanner"
             className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-indigo-700 bg-white border border-indigo-200 hover:bg-indigo-50 transition-colors"
           >
             <QrCode size={18} />
@@ -214,7 +214,7 @@ export default function BookingDashboard() {
             <p className="text-sm text-slate-600 mt-0.5">Latest updates across your dataset.</p>
           </div>
           <Link
-            to="/my-bookings"
+            to="/bookings/my"
             className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 inline-flex items-center gap-1"
           >
             View all
@@ -264,7 +264,7 @@ export default function BookingDashboard() {
                 <tr>
                   <td colSpan={3} className="px-6 py-12 text-center text-slate-600">
                     No bookings yet.{" "}
-                    <Link to="/booking/new" className="font-semibold text-indigo-600 hover:underline">
+                    <Link to="/bookings/new" className="font-semibold text-indigo-600 hover:underline">
                       Create one
                     </Link>
                   </td>

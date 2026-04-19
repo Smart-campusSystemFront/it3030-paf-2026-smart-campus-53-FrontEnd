@@ -1,56 +1,58 @@
-import { Layout, Menu } from 'antd'
+import { Menu } from 'antd'
 import {
+  BarChartOutlined,
   CalendarOutlined,
-  DashboardOutlined,
-  FileTextOutlined,
+  PlusCircleOutlined,
+  QrcodeOutlined,
 } from '@ant-design/icons'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 
-const { Sider, Content } = Layout
+/** Site header (60px) + `Layout` main padding for `/bookings` (8 + 12). */
+const BOOKINGS_VIEWPORT_OFFSET = 80
 
-/** Viewport height under global header + main padding (matches Layout shell). */
-const SHELL_H = 'calc(100vh - 124px)'
-
-export default function UserDashboardLayout() {
+export default function BookingsSectionLayout() {
   const { pathname } = useLocation()
+  const shellH = `calc(100vh - ${BOOKINGS_VIEWPORT_OFFSET}px)`
+
   const selectedKeys = (() => {
-    if (pathname.startsWith('/dashboard/tickets')) return ['tickets']
-    return ['overview']
+    if (pathname === '/bookings' || pathname === '/bookings/') return ['dash']
+    if (pathname.startsWith('/bookings/my')) return ['my']
+    if (pathname.startsWith('/bookings/new')) return ['new']
+    if (pathname.startsWith('/bookings/scanner')) return ['scanner']
+    return ['dash']
   })()
 
   return (
-    <Layout
+    <div
       style={{
-        height: SHELL_H,
-        minHeight: SHELL_H,
-        maxHeight: SHELL_H,
+        height: shellH,
+        minHeight: shellH,
+        maxHeight: shellH,
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'stretch',
-        borderRadius: 'var(--radius-lg)',
+        width: '100%',
         overflow: 'hidden',
-        border: '1px solid var(--border)',
-        boxShadow: 'var(--shadow-md)',
+        background: 'var(--bg-page)',
       }}
     >
-      {/* ── Sidebar (fixed height, no scroll) ── */}
-      <Sider
-        width={230}
+      {/* Left nav — same width as workspace Sider, fixed height, no scroll */}
+      <aside
         style={{
+          width: 230,
+          flexShrink: 0,
+          display: 'flex',
+          flexDirection: 'column',
           height: '100%',
-          maxHeight: '100%',
-          background: 'var(--bg-sidebar)',
-          borderRight: 'none',
+          background: 'var(--bg-sidebar, #001845)',
           position: 'relative',
           overflow: 'hidden',
           overflowY: 'hidden',
-          flexShrink: 0,
         }}
       >
-        {/* Sidebar header */}
         <div
           style={{
-            padding: '20px 20px 12px',
+            padding: '16px 18px 10px',
             borderBottom: '1px solid rgba(255,255,255,.07)',
           }}
         >
@@ -75,11 +77,9 @@ export default function UserDashboardLayout() {
               letterSpacing: '-0.2px',
             }}
           >
-            My Workspace
+            Bookings
           </div>
         </div>
-
-        {/* Accent line */}
         <div
           style={{
             height: 3,
@@ -87,8 +87,6 @@ export default function UserDashboardLayout() {
             marginBottom: 8,
           }}
         />
-
-        {/* Menu */}
         <Menu
           mode="inline"
           theme="dark"
@@ -96,24 +94,43 @@ export default function UserDashboardLayout() {
           style={{ background: 'transparent', border: 'none', padding: '4px 10px', overflow: 'hidden' }}
           items={[
             {
-              key: 'overview',
-              icon: <DashboardOutlined />,
-              label: <Link to="/dashboard" style={{ color: 'inherit', textDecoration: 'none', fontWeight: 500 }}>Overview</Link>,
+              key: 'dash',
+              icon: <BarChartOutlined />,
+              label: (
+                <Link to="/bookings" style={{ color: 'inherit', textDecoration: 'none', fontWeight: 500 }}>
+                  Booking dashboard
+                </Link>
+              ),
             },
             {
-              key: 'bookings',
+              key: 'my',
               icon: <CalendarOutlined />,
-              label: <Link to="/bookings" style={{ color: 'inherit', textDecoration: 'none', fontWeight: 500 }}>Bookings</Link>,
+              label: (
+                <Link to="/bookings/my" style={{ color: 'inherit', textDecoration: 'none', fontWeight: 500 }}>
+                  My Booking
+                </Link>
+              ),
             },
             {
-              key: 'tickets',
-              icon: <FileTextOutlined />,
-              label: <Link to="/dashboard/tickets" style={{ color: 'inherit', textDecoration: 'none', fontWeight: 500 }}>My Tickets</Link>,
+              key: 'new',
+              icon: <PlusCircleOutlined />,
+              label: (
+                <Link to="/bookings/new" style={{ color: 'inherit', textDecoration: 'none', fontWeight: 500 }}>
+                  New Booking
+                </Link>
+              ),
+            },
+            {
+              key: 'scanner',
+              icon: <QrcodeOutlined />,
+              label: (
+                <Link to="/bookings/scanner" style={{ color: 'inherit', textDecoration: 'none', fontWeight: 500 }}>
+                  QR Scanner
+                </Link>
+              ),
             },
           ]}
         />
-
-        {/* Sidebar bottom decorative glow */}
         <div
           style={{
             position: 'absolute',
@@ -126,26 +143,25 @@ export default function UserDashboardLayout() {
             pointerEvents: 'none',
           }}
         />
-      </Sider>
+      </aside>
 
-      {/* ── Content (only this pane scrolls) ── */}
-      <Content
+      <div
         style={{
           flex: 1,
           minWidth: 0,
           minHeight: 0,
           height: '100%',
-          background: 'var(--bg-page)',
-          padding: 28,
+          display: 'flex',
+          flexDirection: 'column',
           overflowX: 'hidden',
           overflowY: 'auto',
           WebkitOverflowScrolling: 'touch',
+          paddingLeft: 12,
         }}
+        className="animate-fade-up"
       >
-        <div className="animate-fade-up">
-          <Outlet />
-        </div>
-      </Content>
-    </Layout>
+        <Outlet />
+      </div>
+    </div>
   )
 }

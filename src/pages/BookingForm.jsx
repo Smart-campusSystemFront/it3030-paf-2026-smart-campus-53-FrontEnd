@@ -217,7 +217,7 @@ export default function BookingForm() {
         expectedAttendees: Number(values.expectedAttendees),
       });
       toast.success("Booking request submitted!");
-      navigate("/my-bookings");
+      navigate("/bookings/my");
     } catch (e) {
       if (e?.response?.status === 409) {
         setConflictInline("This time slot is already booked. Please choose a different time.");
@@ -238,8 +238,8 @@ export default function BookingForm() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-16">
-      <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="min-h-0 bg-slate-50 pb-8">
+      <div className="mx-auto max-w-6xl px-4 pt-2 pb-6">
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-slate-900">New Booking</h1>
           <p className="mt-1 text-sm text-slate-600">Request a resource booking.</p>

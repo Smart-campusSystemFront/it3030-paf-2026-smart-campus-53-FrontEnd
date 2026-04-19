@@ -58,8 +58,8 @@ export default function MyBookings() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-16">
-      <div className="mx-auto max-w-6xl px-4 py-8 space-y-6">
+    <div className="min-h-0 bg-slate-50 pb-8">
+      <div className="mx-auto max-w-6xl px-4 pt-2 pb-6 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold text-slate-900">My Bookings</h1>
@@ -67,7 +67,7 @@ export default function MyBookings() {
           </div>
           <button
             type="button"
-            onClick={() => navigate("/booking/new")}
+            onClick={() => navigate("/bookings/new")}
             className="rounded-xl px-4 py-2 font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-all inline-flex items-center gap-2 shadow-sm"
           >
             <Plus size={18} />
@@ -164,7 +164,7 @@ export default function MyBookings() {
             </p>
             <button
               type="button"
-              onClick={() => navigate("/booking/new")}
+              onClick={() => navigate("/bookings/new")}
               className="mt-6 rounded-xl px-4 py-2 font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-all"
             >
               Book a Resource
@@ -183,7 +183,7 @@ export default function MyBookings() {
               bookings={bookings}
               onDateClick={(date) => {
                 const ymd = date.toISOString().slice(0, 10);
-                navigate(`/booking/new?date=${ymd}`);
+                navigate(`/bookings/new?date=${ymd}`);
               }}
             />
           </div>
