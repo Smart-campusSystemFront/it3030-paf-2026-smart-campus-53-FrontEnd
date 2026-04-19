@@ -254,12 +254,16 @@ input:disabled {
   overflow: auto;
   border-radius: 10px;
   border: 1px solid var(--border-surface);
+  /* Match form / filter label scale (14px), not root 18px */
+  font-size: 14px;
+  line-height: 1.4;
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
   min-width: 900px;
+  font-size: inherit;
 }
 
 .table th,
