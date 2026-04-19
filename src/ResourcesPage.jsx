@@ -142,9 +142,6 @@ export default function ResourcesPage() {
       <header className="header">
         <div>
           <h1>Resources</h1>
-          <p className="muted">
-            Module A – Rooms, Labs, Equipment (CRUD + filtering)
-          </p>
         </div>
         <button className="btn" onClick={refresh} disabled={loading}>
           Refresh

@@ -8,6 +8,7 @@
   padding: 28px 18px 48px;
   text-align: left;
   box-sizing: border-box;
+  color: var(--text);
 }
 
 .header {
@@ -18,15 +19,21 @@
   margin-bottom: 18px;
 }
 
-.muted {
-  color: var(--text);
-  opacity: 0.9;
+.header h1 {
+  margin: 0;
+  color: var(--text-h);
 }
 
+.muted {
+  color: var(--text-muted);
+}
+
+/* Light cards on navy canvas (30% silver role) */
 .card {
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 10px;
+  border: 1px solid var(--border-surface);
+  background: var(--surface);
+  color: var(--surface-text);
+  border-radius: 12px;
   padding: 16px;
   margin: 14px 0;
   box-shadow: var(--shadow);
@@ -34,6 +41,12 @@
 
 .card h2 {
   margin: 0 0 12px;
+  color: var(--surface-text);
+}
+
+.card .muted,
+.card td.muted {
+  color: var(--surface-text-muted);
 }
 
 .alert {
@@ -50,8 +63,9 @@
   border-radius: 12px;
   padding: 16px 18px;
   margin: 12px 0 18px;
-  background: var(--code-bg);
+  background: rgba(254, 254, 254, 0.06);
   text-align: left;
+  color: var(--text);
 }
 
 .backendOfflineTitle {
@@ -71,7 +85,7 @@
   padding: 12px 14px;
   border-radius: 10px;
   border: 1px solid var(--border);
-  background: var(--bg);
+  background: rgba(6, 7, 7, 0.35);
   font-family: var(--mono);
   font-size: 13px;
   line-height: 1.45;
@@ -80,16 +94,17 @@
 }
 
 .backendOfflineHint {
-  margin: 0;
+  margin: 0 0 8px;
   font-size: 14px;
+  color: var(--text-muted);
 }
 
 .backendOfflineWarn {
   margin: 0 0 12px;
   padding: 10px 12px;
   border-radius: 10px;
-  border: 1px solid var(--accent-border);
-  background: var(--accent-bg);
+  border: 1px solid rgba(249, 191, 59, 0.45);
+  background: rgba(249, 191, 59, 0.12);
   color: var(--text-h);
   font-size: 14px;
   line-height: 1.45;
@@ -100,11 +115,15 @@
   padding: 2px 6px;
   border-radius: 4px;
   border: 1px solid var(--border);
-  background: var(--bg);
+  background: rgba(6, 7, 7, 0.35);
 }
 
 .backendOffline a {
-  color: var(--accent);
+  color: var(--link);
+}
+
+.backendOffline a:hover {
+  color: var(--link-hover);
 }
 
 .form {
@@ -119,6 +138,13 @@
   flex-direction: column;
   gap: 6px;
   font-size: 14px;
+  color: var(--surface-text-muted);
+}
+
+.form label span,
+.filters label span {
+  color: var(--surface-text);
+  font-weight: 500;
 }
 
 input,
@@ -126,14 +152,21 @@ select {
   font: inherit;
   padding: 10px 10px;
   border-radius: 8px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text-h);
+  border: 1px solid var(--border-surface);
+  background: #fff;
+  color: var(--surface-text);
   outline: none;
+}
+
+input:focus,
+select:focus {
+  border-color: var(--link);
+  box-shadow: 0 0 0 2px rgba(0, 145, 255, 0.25);
 }
 
 input:disabled {
   opacity: 0.6;
+  background: rgba(254, 254, 254, 0.85);
 }
 
 .actions {
@@ -152,20 +185,57 @@ input:disabled {
   padding: 10px 12px;
   border-radius: 10px;
   cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 .btn:hover {
-  border-color: var(--accent-border);
+  border-color: var(--link);
+  color: var(--link-hover);
 }
 
+.btn:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+
+/* Gold CTA — 10% accent role */
 .btn.primary {
-  background: var(--accent-bg);
-  border-color: var(--accent-border);
-  color: var(--text-h);
+  background: var(--accent);
+  border-color: rgba(249, 191, 59, 0.85);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+.btn.primary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  color: var(--accent-text);
+}
+
+.card .btn {
+  border-color: var(--border-surface);
+  color: var(--surface-text);
+}
+
+.card .btn:hover {
+  border-color: var(--link);
+  color: var(--link);
+}
+
+.card .btn.primary {
+  color: var(--accent-text);
 }
 
 .btn.danger {
-  border-color: rgba(255, 90, 90, 0.6);
+  border-color: rgba(200, 60, 60, 0.55);
+  color: #a32020;
+}
+
+.card .btn.danger {
+  color: #a32020;
 }
 
 .btn.small {
@@ -183,7 +253,7 @@ input:disabled {
 .tableWrap {
   overflow: auto;
   border-radius: 10px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-surface);
 }
 
 .table {
@@ -195,14 +265,16 @@ input:disabled {
 .table th,
 .table td {
   padding: 10px 10px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-surface);
   vertical-align: top;
+  color: var(--surface-text);
 }
 
 .table th {
   text-align: left;
-  color: var(--text-h);
-  background: rgba(255, 255, 255, 0.03);
+  font-weight: 600;
+  color: var(--surface-text);
+  background: rgba(0, 145, 255, 0.08);
   position: sticky;
   top: 0;
 }
@@ -220,4 +292,3 @@ input:disabled {
     grid-template-columns: 1fr;
   }
 }
-
