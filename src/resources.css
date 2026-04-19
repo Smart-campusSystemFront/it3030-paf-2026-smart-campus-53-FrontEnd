@@ -2,7 +2,25 @@
   --container: 1120px;
 }
 
+/**
+ * Tokens for this module only. Global `--text` is light (silver) for the dark shell;
+ * inputs use white backgrounds, so we must use dark ink here — otherwise `var(--surface-text)`
+ * is invalid and inputs inherit near-white body text (invisible on white).
+ */
 .page {
+  --surface: #ffffff;
+  --surface-text: #0d1b2a;
+  --surface-text-muted: #4a5568;
+  --border-surface: #c8d0e0;
+  --shadow: 0 4px 16px rgba(0, 32, 91, 0.1);
+  --accent-border: rgba(0, 145, 255, 0.35);
+  --accent-bg: rgba(0, 145, 255, 0.12);
+  --link: #0091ff;
+  --link-hover: #0078cf;
+  --accent-hover: #0070d1;
+  --accent-text: #ffffff;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+
   width: min(var(--container), 100%);
   margin: 0 auto;
   padding: 28px 18px 48px;
@@ -147,26 +165,43 @@
   font-weight: 500;
 }
 
-input,
-select {
+.page input,
+.page select,
+.page textarea {
   font: inherit;
   padding: 10px 10px;
   border-radius: 8px;
   border: 1px solid var(--border-surface);
   background: #fff;
   color: var(--surface-text);
+  caret-color: var(--surface-text);
   outline: none;
 }
 
-input:focus,
-select:focus {
+.page input::placeholder,
+.page textarea::placeholder {
+  color: var(--surface-text-muted);
+  opacity: 1;
+}
+
+.page input:focus,
+.page select:focus,
+.page textarea:focus {
   border-color: var(--link);
   box-shadow: 0 0 0 2px rgba(0, 145, 255, 0.25);
 }
 
-input:disabled {
+.page select option {
+  color: var(--surface-text);
+  background: #fff;
+}
+
+.page input:disabled,
+.page select:disabled,
+.page textarea:disabled {
   opacity: 0.6;
   background: rgba(254, 254, 254, 0.85);
+  color: var(--surface-text-muted);
 }
 
 .actions {
