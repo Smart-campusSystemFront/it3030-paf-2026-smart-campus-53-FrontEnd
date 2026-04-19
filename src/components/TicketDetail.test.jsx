@@ -34,10 +34,10 @@ const sampleTicket = {
 
 function renderDetail() {
   return render(
-    <MemoryRouter initialEntries={['/tickets/9']}>
+    <MemoryRouter initialEntries={['/dashboard/tickets/9']}>
       <ToastProvider>
         <Routes>
-          <Route path="/tickets/:id" element={<TicketDetail />} />
+          <Route path="/dashboard/tickets/:id" element={<TicketDetail />} />
         </Routes>
       </ToastProvider>
     </MemoryRouter>,

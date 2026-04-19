@@ -19,6 +19,9 @@ import BookingsSectionLayout from './components/BookingsSectionLayout.jsx'
 import ResourcesSectionLayout from './components/ResourcesSectionLayout.jsx'
 import ResourcesBrowsePage from './pages/resources/ResourcesBrowsePage.jsx'
 import ResourcesAddPage from './pages/resources/ResourcesAddPage.jsx'
+import MyTicketsPage from './pages/dashboard/MyTicketsPage.jsx'
+import CreateTicketPage from './pages/dashboard/CreateTicketPage.jsx'
+import { TicketDetail } from './components/TicketDetail.jsx'
 import AdminOverview from './pages/admin/Overview.jsx'
 import AdminTickets from './pages/admin/Tickets.jsx'
 import AdminNotifications from './pages/admin/Notifications.jsx'
@@ -46,7 +49,9 @@ export default function App() {
               }
             >
               <Route index element={<UserDashboardOverview />} />
-              <Route path="tickets" element={<UserTickets />} />
+              <Route path="tickets" element={<MyTicketsPage />} />
+              <Route path="tickets/new" element={<CreateTicketPage />} />
+              <Route path="tickets/:id" element={<TicketDetail />} />
             </Route>
             <Route path="/dashboard/bookings/dashboard" element={<Navigate to="/bookings" replace />} />
             <Route path="/dashboard/bookings/my" element={<Navigate to="/bookings/my" replace />} />

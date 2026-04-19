@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import {
   addComment,
   assignTechnician,
@@ -13,6 +13,18 @@ import {
 import { useToast } from '../context/ToastContext.jsx'
 
 const STATUSES = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED', 'REJECTED']
+
+function statusBadgeClass(status) {
+  const s = String(status || '').toUpperCase()
+  const map = {
+    OPEN: 'bg-sky-100 text-sky-800 ring-1 ring-sky-200/80',
+    IN_PROGRESS: 'bg-amber-100 text-amber-900 ring-1 ring-amber-200/80',
+    RESOLVED: 'bg-emerald-100 text-emerald-900 ring-1 ring-emerald-200/80',
+    CLOSED: 'bg-slate-100 text-slate-700 ring-1 ring-slate-200/80',
+    REJECTED: 'bg-rose-100 text-rose-800 ring-1 ring-rose-200/80',
+  }
+  return map[s] || 'bg-slate-100 text-slate-700 ring-1 ring-slate-200/80'
+}
 
 export function TicketDetail() {
   const { id } = useParams()
@@ -120,15 +132,27 @@ export function TicketDetail() {
   }
 
   if (!ticket) {
-    return <p className="muted">Loading…</p>
+    return <p className="text-sm text-slate-500">Loading…</p>
   }
 
   return (
-    <div className="detail-grid">
-      <section className="panel">
-        <h1>
+    <div className="mx-auto max-w-5xl space-y-6">
+      <section className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm md:p-8">
+        <p className="mb-3">
+          <Link
+            to="/dashboard/tickets"
+            className="text-sm font-semibold text-sky-600 underline-offset-2 hover:text-sky-700 hover:underline"
+          >
+            ← Maintenance &amp; Incident Ticketing
+          </Link>
+        </p>
+        <h1 className="font-['Plus_Jakarta_Sans',system-ui,sans-serif] text-2xl font-bold tracking-tight text-slate-900">
           Ticket #{ticket.id}{' '}
-          <span className={`pill status-${ticket.status}`}>{ticket.status}</span>
+          <span
+            className={`ml-2 inline-flex align-middle text-sm font-semibold uppercase tracking-wide ${statusBadgeClass(ticket.status)} rounded-md px-2.5 py-0.5`}
+          >
+            {ticket.status}
+          </span>
         </h1>
         <dl className="kv">
           <div>
@@ -207,8 +231,8 @@ export function TicketDetail() {
           </div>
         )}
       </section>
-      <section className="panel">
-        <h2>Comments</h2>
+      <section className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm md:p-8">
+        <h2 className="font-['Plus_Jakarta_Sans',system-ui,sans-serif] text-lg font-bold text-slate-900">Comments</h2>
         {session.token ? (
           <form className="form inline" onSubmit={onAddComment}>
             <textarea

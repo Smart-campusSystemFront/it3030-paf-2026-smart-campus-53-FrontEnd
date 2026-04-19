@@ -233,7 +233,14 @@ export default function Layout() {
   const mainPadding = tightBelowHeader ? '0 12px 0' : '32px 24px'
 
   return (
-    <div style={{ minHeight: '100%', background: 'var(--bg-page)', color: 'var(--text-primary)' }}>
+    <div
+      className={shellWide ? 'min-h-full bg-slate-100 text-slate-900' : 'min-h-full'}
+      style={
+        shellWide
+          ? undefined
+          : { minHeight: '100%', background: 'var(--bg-page)', color: 'var(--text-primary)' }
+      }
+    >
 
       {/* ── Top Navigation Bar ── */}
       <header
