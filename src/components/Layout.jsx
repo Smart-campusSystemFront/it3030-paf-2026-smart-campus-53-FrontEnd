@@ -33,6 +33,7 @@ function ProfileDropdownMenu() {
   const handleLogout = async () => {
     setIsOpen(false)
     await logout()
+    navigate('/login')
   }
 
   const avatarInitial = useMemo(() => {
