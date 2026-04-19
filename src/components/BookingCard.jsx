@@ -86,7 +86,7 @@ export default function BookingCard({ booking, onCancel }) {
   const qrUnavailable = booking?.status === "APPROVED" && booking?.qrAvailable === false;
 
   return (
-    <div className="relative h-full flex flex-col w-full max-w-full rounded-xl bg-white border border-slate-100 shadow-sm hover:shadow transition-all overflow-hidden">
+    <div className="relative h-full flex flex-col w-full max-w-full rounded-xl bookings-card border shadow-sm hover:shadow transition-all overflow-hidden">
       <div className={`absolute left-0 top-0 bottom-0 w-1 ${statusAccent(booking?.status)}`} />
       <div className="p-3.5 pl-4 flex flex-col flex-1 min-h-0 h-full">
         <div className="flex-1 flex flex-col gap-1.5 min-h-0">
@@ -130,7 +130,7 @@ export default function BookingCard({ booking, onCancel }) {
             <button
               type="button"
               onClick={() => setExpanded((v) => !v)}
-              className="mt-0.5 text-[11px] font-semibold text-indigo-600 hover:text-indigo-700 transition-all"
+              className="bookings-link mt-0.5 text-[11px] transition-all"
               aria-label={expanded ? "Collapse purpose" : "Expand purpose"}
             >
               {expanded ? "Show less" : "Show more"}

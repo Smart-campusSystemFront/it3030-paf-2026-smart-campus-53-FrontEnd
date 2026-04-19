@@ -11,7 +11,8 @@ import { useAuth } from '../context/AuthContext.jsx'
 
 const { Sider, Content } = Layout
 
-const SHELL_H = 'calc(100vh - 124px)'
+/** Site header 60px; `Layout` main has no vertical padding for `/admin/*`. */
+const SHELL_H = 'calc(100vh - 60px)'
 
 export default function AdminDashboardLayout() {
   const { user } = useAuth()
@@ -25,6 +26,7 @@ export default function AdminDashboardLayout() {
 
   return (
     <Layout
+      className="admin-dashboard-layout"
       style={{
         height: SHELL_H,
         minHeight: SHELL_H,
@@ -32,10 +34,12 @@ export default function AdminDashboardLayout() {
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'stretch',
-        borderRadius: 'var(--radius-lg)',
         overflow: 'hidden',
-        border: '1px solid var(--border)',
-        boxShadow: 'var(--shadow-md)',
+        background: 'transparent',
+        border: 'none',
+        boxShadow: 'none',
+        borderRadius: 0,
+        outline: 'none',
       }}
     >
       {/* ── Admin Sidebar (fixed height, no scroll) ── */}
@@ -44,19 +48,22 @@ export default function AdminDashboardLayout() {
         style={{
           height: '100%',
           maxHeight: '100%',
-          background: 'var(--c-navy)',
+          background: 'linear-gradient(180deg, #0d5cb8 0%, #084a9a 40%, #063a7d 100%)',
+          border: 'none',
           borderRight: 'none',
+          outline: 'none',
+          boxShadow: 'none',
           position: 'relative',
           overflow: 'hidden',
           overflowY: 'hidden',
           flexShrink: 0,
         }}
       >
-        {/* Sidebar header with amber accent badge */}
+        {/* Sidebar header */}
         <div
           style={{
             padding: '20px 20px 14px',
-            borderBottom: '1px solid rgba(255,255,255,.07)',
+            borderBottom: 'none',
           }}
         >
           <div
@@ -64,15 +71,15 @@ export default function AdminDashboardLayout() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: 6,
-              background: 'rgba(249,191,59,.15)',
-              border: '1px solid rgba(249,191,59,.3)',
+              background: 'rgba(255,255,255,.14)',
+              border: 'none',
               borderRadius: 6,
               padding: '2px 8px',
               marginBottom: 8,
             }}
           >
-            <SettingOutlined style={{ color: 'var(--c-amber)', fontSize: 10 }} />
-            <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--c-amber)', letterSpacing: '1px', textTransform: 'uppercase' }}>
+            <SettingOutlined style={{ color: '#e0f2fe', fontSize: 10 }} />
+            <span style={{ fontSize: 10, fontWeight: 700, color: '#f0f9ff', letterSpacing: '1px', textTransform: 'uppercase' }}>
               {user?.role === 'ADMIN' ? 'ADMIN' : 'TECHNICIAN'}
             </span>
           </div>
@@ -92,11 +99,11 @@ export default function AdminDashboardLayout() {
           </div>
         </div>
 
-        {/* Amber accent stripe */}
+        {/* Accent stripe */}
         <div
           style={{
             height: 3,
-            background: 'linear-gradient(90deg,var(--c-amber),var(--c-blue))',
+            background: 'linear-gradient(90deg,#7dd3fc,#38bdf8,#0ea5e9)',
             marginBottom: 8,
           }}
         />
@@ -140,7 +147,7 @@ export default function AdminDashboardLayout() {
             width: 160,
             height: 160,
             borderRadius: '50%',
-            background: 'radial-gradient(circle,rgba(249,191,59,.10) 0%,transparent 70%)',
+            background: 'radial-gradient(circle,rgba(56,189,248,.18) 0%,transparent 70%)',
             pointerEvents: 'none',
           }}
         />
@@ -152,7 +159,7 @@ export default function AdminDashboardLayout() {
             width: 160,
             height: 160,
             borderRadius: '50%',
-            background: 'radial-gradient(circle,rgba(0,145,255,.08) 0%,transparent 70%)',
+            background: 'radial-gradient(circle,rgba(14,165,233,.14) 0%,transparent 70%)',
             pointerEvents: 'none',
           }}
         />
@@ -160,6 +167,7 @@ export default function AdminDashboardLayout() {
 
       {/* ── Content (only this pane scrolls) ── */}
       <Content
+        className="admin-dashboard-content"
         style={{
           flex: 1,
           minWidth: 0,
@@ -170,6 +178,9 @@ export default function AdminDashboardLayout() {
           overflowX: 'hidden',
           overflowY: 'auto',
           WebkitOverflowScrolling: 'touch',
+          border: 'none',
+          outline: 'none',
+          boxShadow: 'none',
         }}
       >
         <div className="animate-fade-up">

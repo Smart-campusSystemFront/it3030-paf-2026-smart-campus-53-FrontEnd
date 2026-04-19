@@ -13,10 +13,15 @@
   --accent: var(--azure);
 
   /* Derived shades */
+  --c-navy:      #00205b;
   --c-navy-80:   #1a3a6e;
   --c-navy-60:   #2d548a;
+  --c-blue:      #0091ff;
+  --c-amber:     #f9bf3b;
   --c-blue-light:#e6f4ff;
   --c-amber-light:#fffbeb;
+  /* App shell (light pages); avoids navy #root peeking around dashboard padding */
+  --bg-page:     #f0f4f8;
 
   font: 16px/145% var(--sans);
   letter-spacing: 0.02em;
@@ -59,6 +64,10 @@
 ───────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
 
+html {
+  background: var(--bg-page);
+}
+
 html, body, #root {
   height: 100%;
   font-family: 'Inter', system-ui, sans-serif;
@@ -69,8 +78,6 @@ body {
   margin: 0;
   background: var(--bg-page);
   color: var(--text-primary);
-  background: var(--bg);
-  color: var(--text);
 }
 
 /* ─────────────────────────────────────────────
@@ -133,7 +140,7 @@ body {
 
 #root {
   min-height: 100svh;
-  background: var(--bg);
+  background: var(--bg-page);
   width: 100%;
   max-width: 100%;
   margin: 0;
@@ -145,21 +152,184 @@ body {
   box-sizing: border-box;
 }
 
+/* Bookings hub (/bookings/*): navy canvas, amber CTAs, off-white cards */
+.bookings-section {
+  --b-canvas: #00205b;
+  --b-card: #fefefe;
+  --b-btn: #f9bf3b;
+  --b-btn-hover: #edc030;
+  --b-btn-text: #00205b;
+  --b-chrome: #fefefe;
+  --b-chrome-muted: rgba(254, 254, 254, 0.72);
+}
+
+/* Outer “frame” behind sidebar + content so each reads as a separate box */
+.bookings-section.bookings-shell {
+  display: flex !important;
+  flex-direction: row;
+  align-items: stretch;
+  box-sizing: border-box;
+  padding: 12px;
+  gap: 12px;
+  background: #001435 !important;
+  overflow: hidden;
+}
+
+/* Raised sidebar card */
+.bookings-section .bookings-sidebar-panel {
+  display: flex;
+  flex-direction: column;
+  width: 230px;
+  flex-shrink: 0;
+  min-height: 0;
+  align-self: stretch;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(165deg, #063a7d 0%, #00205b 50%, #001a48 100%);
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Raised main content card */
+.bookings-section .bookings-main-panel {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--b-canvas);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.32);
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px 10px 12px 12px;
+}
+
+.bookings-section .bookings-card {
+  background-color: var(--b-card) !important;
+  border-color: rgba(0, 32, 91, 0.1) !important;
+  color: #0d1b2a;
+}
+
+.bookings-section .bookings-chrome-title {
+  color: var(--b-chrome);
+}
+
+.bookings-section .bookings-chrome-subtle {
+  color: var(--b-chrome-muted);
+}
+
+.bookings-section .bookings-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border-radius: 0.75rem;
+  padding: 0.5rem 1.1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25;
+  background-color: var(--b-btn) !important;
+  color: var(--b-btn-text) !important;
+  border: 1px solid rgba(0, 32, 91, 0.12);
+  transition: background-color 0.15s ease, filter 0.15s ease;
+  text-decoration: none !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.14);
+}
+
+.bookings-section .bookings-btn:hover {
+  background-color: var(--b-btn-hover) !important;
+  color: var(--b-btn-text) !important;
+}
+
+.bookings-section .bookings-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.bookings-section .bookings-btn-outline {
+  background: transparent !important;
+  color: var(--b-btn) !important;
+  border: 2px solid var(--b-btn) !important;
+  box-shadow: none;
+}
+
+.bookings-section .bookings-btn-outline:hover {
+  background: rgba(249, 191, 59, 0.14) !important;
+  color: var(--b-btn) !important;
+}
+
+.bookings-section .bookings-link {
+  color: var(--b-btn);
+  font-weight: 600;
+}
+
+.bookings-section .bookings-link:hover {
+  color: var(--b-btn-hover);
+  text-decoration: underline;
+}
+
+/* Do not set color here — :root --text-h is light (silver) and overrides Tailwind
+   utilities on light pages (e.g. Admin Bookings). Headings inherit from parent or use classes. */
 h1,
 h2 {
   font-family: var(--heading);
   font-weight: 600;
-  color: var(--text-h);
 }
 
 /* ─────────────────────────────────────────────
    ANTD OVERRIDES  (scoped via data-theme)
 ───────────────────────────────────────────── */
 
+/* No outer edge on sidebars (avoids dark line between sider and content). */
+.ant-layout-sider {
+  border-inline-end: none !important;
+}
+
+/* Admin dashboard: strip Ant split borders / focus outlines on the shell. */
+.admin-dashboard-layout.ant-layout,
+.admin-dashboard-layout.ant-layout-has-sider {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.admin-dashboard-layout .ant-layout-sider,
+.admin-dashboard-layout .ant-layout-sider-children {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.admin-dashboard-layout .ant-layout-content,
+.admin-dashboard-content.ant-layout-content {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Dark menu: remove item hairlines and the active right-edge bar */
+.admin-dashboard-layout .ant-menu-dark.ant-menu-inline .ant-menu-item,
+.admin-dashboard-layout .ant-menu-dark.ant-menu-inline .ant-menu-submenu-title {
+  border: none !important;
+}
+
+.admin-dashboard-layout .ant-menu-dark .ant-menu-item::after,
+.admin-dashboard-layout .ant-menu-dark .ant-menu-submenu-title::after {
+  display: none !important;
+  border: none !important;
+}
+
 /* Sidebar menu items */
 .ant-menu-item-selected {
-  background: linear-gradient(90deg, rgba(0,145,255,.15), rgba(0,145,255,.05)) !important;
-  border-right: 3px solid var(--c-blue) !important;
+  background: linear-gradient(90deg, rgba(0,145,255,.18), rgba(0,145,255,.06)) !important;
+  border-right: none !important;
 }
 .ant-menu-item-selected .ant-menu-title-content,
 .ant-menu-item-selected .anticon {
@@ -168,6 +338,53 @@ h2 {
 }
 .ant-menu-item:hover:not(.ant-menu-item-selected) {
   background: rgba(0,145,255,.06) !important;
+}
+
+/* Bookings sidebar only: amber pill + navy text for active item (not the default blue tint). */
+.bookings-sidebar-nav .ant-menu.ant-menu-dark,
+.bookings-sidebar-nav .ant-menu.ant-menu-dark.ant-menu-root.ant-menu-inline {
+  background: transparent !important;
+}
+
+.bookings-sidebar-nav .ant-menu-dark.ant-menu-inline .ant-menu-item {
+  border-radius: 10px !important;
+  margin-block: 5px !important;
+  margin-inline: 8px !important;
+  width: calc(100% - 16px) !important;
+  max-width: calc(100% - 16px) !important;
+  height: auto !important;
+  line-height: 1.4 !important;
+  padding-block: 10px !important;
+  padding-inline: 12px !important;
+  border: none !important;
+}
+
+.bookings-sidebar-nav .ant-menu-dark .ant-menu-item::after {
+  display: none !important;
+  border: none !important;
+}
+
+.bookings-sidebar-nav .ant-menu-dark .ant-menu-item:not(.ant-menu-item-selected) {
+  color: rgba(254, 254, 254, 0.88) !important;
+}
+
+.bookings-sidebar-nav .ant-menu-dark .ant-menu-item-selected {
+  background: linear-gradient(135deg, #f9bf3b 0%, #e8ad2e 100%) !important;
+  color: #00205b !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+}
+
+.bookings-sidebar-nav .ant-menu-dark .ant-menu-item-selected .ant-menu-title-content,
+.bookings-sidebar-nav .ant-menu-dark .ant-menu-item-selected .anticon,
+.bookings-sidebar-nav .ant-menu-dark .ant-menu-item-selected a,
+.bookings-sidebar-nav .ant-menu-dark .ant-menu-item-selected .ant-menu-item-icon {
+  color: #00205b !important;
+}
+
+.bookings-sidebar-nav .ant-menu-dark .ant-menu-item:hover:not(.ant-menu-item-selected) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
 }
 
 h1 {

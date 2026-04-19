@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
   ArrowRight,
+  Ban,
   BarChart3,
   CalendarPlus,
   CheckCircle2,
@@ -28,7 +29,7 @@ function countBy(list) {
 
 function StatCard({ icon: Icon, label, value, hint, accent }) {
   return (
-    <div className="rounded-2xl bg-white border border-slate-100 shadow-sm p-5 flex gap-4 transition-shadow hover:shadow-md">
+    <div className="rounded-2xl bookings-card border shadow-sm p-5 flex gap-4 transition-shadow hover:shadow-md">
       <div
         className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${accent}`}
       >
@@ -96,24 +97,24 @@ export default function BookingDashboard() {
   );
 
   return (
-    <div className="px-4 pt-2 pb-6 lg:px-5 lg:pt-3 max-w-6xl mx-auto space-y-6">
-      <header className="rounded-2xl bg-white border border-slate-100 shadow-sm p-6 lg:p-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-        <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full bg-indigo-50 text-indigo-700 px-3 py-1 text-xs font-semibold border border-indigo-100">
+    <div className="mx-auto flex min-h-full w-full max-w-6xl flex-1 flex-col space-y-6 px-4 pt-2 pb-10 lg:px-5 lg:pt-3">
+      <header className="rounded-2xl bookings-card border shadow-sm px-6 py-8 lg:px-10 lg:py-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+        <div className="flex flex-1 flex-col items-center justify-center text-center lg:items-start lg:text-left space-y-3 max-w-xl mx-auto lg:mx-0">
+          <div className="inline-flex items-center gap-2 rounded-full bg-[#F9BF3B]/20 text-[#00205B] px-3 py-1 text-xs font-semibold border border-[#F9BF3B]/40">
             <Sparkles size={14} />
             Live overview
           </div>
           <h1 className="text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight">
             Booking operations dashboard
           </h1>
-          <p className="text-slate-600 text-sm max-w-xl leading-relaxed">
-            Track requests, approvals, and room usage in one place. Use the sidebar to jump between booking tools.
+          <p className="text-slate-600 text-sm leading-relaxed">
+            Metrics, peak-hour usage, and your latest reservations—plus quick actions when you are ready to book or scan a QR at the desk.
           </p>
         </div>
-        <div className="flex flex-wrap gap-3 shrink-0">
+        <div className="flex flex-wrap items-center justify-center gap-3 shrink-0">
           <Link
             to="/bookings/new"
-            className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition-colors"
+            className="bookings-btn inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm shadow-sm transition-colors"
           >
             <CalendarPlus size={18} />
             New booking
@@ -121,7 +122,7 @@ export default function BookingDashboard() {
           </Link>
           <Link
             to="/bookings/scanner"
-            className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-indigo-700 bg-white border border-indigo-200 hover:bg-indigo-50 transition-colors"
+            className="bookings-btn-outline inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors"
           >
             <QrCode size={18} />
             QR scanner
@@ -130,8 +131,8 @@ export default function BookingDashboard() {
       </header>
 
       <section>
-        <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">Key metrics</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <h2 className="text-sm font-semibold bookings-chrome-subtle uppercase tracking-wide mb-3">Key metrics</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           <StatCard
             icon={Layers}
             label={adminStats ? "Total bookings" : "In your list"}
@@ -160,13 +161,20 @@ export default function BookingDashboard() {
             hint="Declined requests"
             accent="bg-rose-600"
           />
+          <StatCard
+            icon={Ban}
+            label="Cancelled"
+            value={loading ? "—" : cancelled}
+            hint="Withdrawn or voided"
+            accent="bg-slate-500"
+          />
         </div>
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        <div className="lg:col-span-2 rounded-2xl bg-white border border-slate-100 shadow-sm p-6">
+        <div className="lg:col-span-2 rounded-2xl bookings-card border shadow-sm p-6">
           <div className="flex items-center gap-2 text-slate-900 font-semibold">
-            <BarChart3 size={18} className="text-indigo-600" />
+            <BarChart3 size={18} className="text-[#00205B]" />
             Status mix
           </div>
           <p className="text-sm text-slate-600 mt-1">Share of bookings by status.</p>
@@ -193,9 +201,9 @@ export default function BookingDashboard() {
           </ul>
         </div>
 
-        <div className="lg:col-span-3 rounded-2xl bg-white border border-slate-100 shadow-sm p-6">
+        <div className="lg:col-span-3 rounded-2xl bookings-card border shadow-sm p-6">
           <div className="flex items-center gap-2 text-slate-900 font-semibold">
-            <TrendingUp size={18} className="text-indigo-600" />
+            <TrendingUp size={18} className="text-[#00205B]" />
             Booking hours
           </div>
           <p className="text-sm text-slate-600 mt-1">
@@ -207,7 +215,7 @@ export default function BookingDashboard() {
         </div>
       </div>
 
-      <section className="rounded-2xl bg-white border border-slate-100 shadow-sm overflow-hidden">
+      <section className="rounded-2xl bookings-card border shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-slate-900">Recent bookings</h2>
@@ -215,7 +223,7 @@ export default function BookingDashboard() {
           </div>
           <Link
             to="/bookings/my"
-            className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 inline-flex items-center gap-1"
+            className="bookings-link text-sm inline-flex items-center gap-1"
           >
             View all
             <ArrowRight size={16} />
@@ -264,7 +272,7 @@ export default function BookingDashboard() {
                 <tr>
                   <td colSpan={3} className="px-6 py-12 text-center text-slate-600">
                     No bookings yet.{" "}
-                    <Link to="/bookings/new" className="font-semibold text-indigo-600 hover:underline">
+                    <Link to="/bookings/new" className="bookings-link font-semibold hover:underline">
                       Create one
                     </Link>
                   </td>

@@ -58,24 +58,24 @@ export default function MyBookings() {
   }
 
   return (
-    <div className="min-h-0 bg-slate-50 pb-8">
-      <div className="mx-auto max-w-6xl px-4 pt-2 pb-6 space-y-6">
+    <div className="flex min-h-full w-full flex-1 flex-col">
+      <div className="mx-auto w-full max-w-6xl flex-1 px-4 pt-2 pb-12 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold text-slate-900">My Bookings</h1>
-            <p className="mt-1 text-sm text-slate-600">Track your requests and manage bookings.</p>
+            <h1 className="text-2xl font-semibold bookings-chrome-title">My Bookings</h1>
+            <p className="mt-1 text-sm bookings-chrome-subtle">Track your requests and manage bookings.</p>
           </div>
           <button
             type="button"
             onClick={() => navigate("/bookings/new")}
-            className="rounded-xl px-4 py-2 font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-all inline-flex items-center gap-2 shadow-sm"
+            className="bookings-btn rounded-xl px-4 py-2 font-medium transition-all inline-flex items-center gap-2 shadow-sm"
           >
             <Plus size={18} />
             New Booking
           </button>
         </div>
 
-        <div className="rounded-2xl bg-white border border-slate-100 shadow-sm p-4">
+        <div className="rounded-2xl bookings-card border shadow-sm p-4">
           <div className="flex flex-wrap items-center gap-4">
             {TABS.map((t) => {
               const isActive = activeTab === t;
@@ -85,21 +85,21 @@ export default function MyBookings() {
                   type="button"
                   onClick={() => setActiveTab(t)}
                   className={`relative px-3 py-2 text-sm font-semibold transition-all ${
-                    isActive ? "text-indigo-700" : "text-slate-600 hover:text-slate-800"
+                    isActive ? "text-[#00205B]" : "text-slate-600 hover:text-slate-800"
                   }`}
                 >
                   <span className="inline-flex items-center gap-2">
                     {tabLabel(t)}
                     <span
                       className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                        isActive ? "bg-indigo-100 text-indigo-700" : "bg-slate-100 text-slate-600"
+                        isActive ? "bg-[#F9BF3B]/35 text-[#00205B]" : "bg-slate-100 text-slate-600"
                       }`}
                     >
                       {counts[t] ?? 0}
                     </span>
                   </span>
                   {isActive && (
-                    <span className="absolute left-3 right-3 -bottom-1 h-0.5 bg-indigo-600 rounded-full" />
+                    <span className="absolute left-3 right-3 -bottom-1 h-0.5 bg-[#F9BF3B] rounded-full" />
                   )}
                 </button>
               );
@@ -122,11 +122,11 @@ export default function MyBookings() {
         )}
 
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-slate-900">
+          <h2 className="text-lg font-semibold bookings-chrome-title">
             {activeTab === "All" ? "All Bookings" : `${tabLabel(activeTab)} Bookings`}
           </h2>
           {!loading && !error && (
-            <span className="text-sm font-semibold text-slate-600">{filtered.length} shown</span>
+            <span className="text-sm font-semibold bookings-chrome-subtle">{filtered.length} shown</span>
           )}
         </div>
 
@@ -148,9 +148,9 @@ export default function MyBookings() {
         </div>
 
         {!loading && !error && filtered.length === 0 && (
-          <div className="rounded-2xl bg-white border border-slate-100 shadow-sm p-10 text-center">
-            <div className="mx-auto h-16 w-16 rounded-2xl bg-indigo-50 flex items-center justify-center">
-              <CalendarDays size={30} className="text-indigo-600" />
+          <div className="rounded-2xl bookings-card border shadow-sm p-10 text-center">
+            <div className="mx-auto h-16 w-16 rounded-2xl bg-[#F9BF3B]/25 flex items-center justify-center">
+              <CalendarDays size={30} className="text-[#00205B]" />
             </div>
             <h3 className="mt-4 text-lg font-semibold text-slate-900">
               {activeTab === "All"
@@ -165,16 +165,16 @@ export default function MyBookings() {
             <button
               type="button"
               onClick={() => navigate("/bookings/new")}
-              className="mt-6 rounded-xl px-4 py-2 font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-all"
+              className="bookings-btn mt-6 rounded-xl px-4 py-2 font-semibold transition-all"
             >
               Book a Resource
             </button>
           </div>
         )}
 
-        <div className="rounded-2xl bg-white border border-slate-100 shadow-sm p-6">
+        <div className="rounded-2xl bookings-card border shadow-sm p-6">
           <div className="flex items-center gap-2 text-slate-900 font-semibold">
-            <CalendarDays size={18} className="text-indigo-600" />
+            <CalendarDays size={18} className="text-[#00205B]" />
             Booking Calendar
           </div>
           <p className="mt-1 text-sm text-slate-600">Click a date to start a booking.</p>

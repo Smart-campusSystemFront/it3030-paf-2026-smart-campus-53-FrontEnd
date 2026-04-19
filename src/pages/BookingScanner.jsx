@@ -31,10 +31,10 @@ export default function BookingScanner() {
   }, []);
 
   return (
-    <div className="min-h-0 bg-slate-50">
-      <div className="mx-auto max-w-3xl px-4 pt-2 pb-6 space-y-4">
-        <div className="rounded-2xl bg-white border border-slate-100 shadow-sm p-8 space-y-2">
-          <div className="inline-flex items-center gap-2 text-indigo-700 font-semibold text-sm uppercase tracking-wide">
+    <div className="flex min-h-full w-full flex-1 flex-col">
+      <div className="mx-auto w-full max-w-3xl flex-1 space-y-4 px-4 pt-2 pb-12">
+        <div className="rounded-2xl bookings-card border shadow-sm p-8 space-y-2">
+          <div className="inline-flex items-center gap-2 text-[#00205B] font-semibold text-sm uppercase tracking-wide">
             <ScanLine size={18} />
             Scanner
           </div>
@@ -44,11 +44,11 @@ export default function BookingScanner() {
           </p>
         </div>
 
-        <div className="rounded-2xl bg-white border border-slate-100 shadow-sm p-6">
-          <div id="qr-reader" className="rounded-xl overflow-hidden" />
+        <div className="rounded-2xl bookings-card border shadow-sm p-6">
+          <div id="qr-reader" className="rounded-xl overflow-hidden bg-[#fefefe]" />
         </div>
 
-        <div className="rounded-2xl bg-white border border-slate-100 shadow-sm p-6 space-y-3">
+        <div className="rounded-2xl bookings-card border shadow-sm p-6 space-y-3">
           <h2 className="text-sm font-semibold text-slate-800">Last scan</h2>
           {last ? (
             <pre className="text-xs whitespace-pre-wrap break-all rounded-xl bg-slate-900 text-emerald-200 p-4 font-mono">

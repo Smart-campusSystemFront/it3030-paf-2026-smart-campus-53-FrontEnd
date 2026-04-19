@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
 import { getDayAvailability } from "../api/bookingApi";
 
 function toLocalDateTimeInputValue(iso) {
@@ -57,6 +58,8 @@ export default function SmartTimeSlots({
   availabilityStart,
   availabilityEnd,
   onSelectSlot,
+  /** Match /bookings hub: #FEFEFE panels + #F9BF3B slot buttons */
+  bookingsHub = false,
 }) {
   const rid = useMemo(() => Number(resourceId), [resourceId]);
   const [loading, setLoading] = useState(false);
@@ -75,7 +78,10 @@ export default function SmartTimeSlots({
         if (cancelled) return;
         setSlots(normalizeDaySlots(selectedDate, res));
       } catch {
-        if (!cancelled) setSlots([]);
+        if (!cancelled) {
+          setSlots([]);
+          toast.error("Could not load time slots for this date. Try again.");
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -86,18 +92,44 @@ export default function SmartTimeSlots({
     };
   }, [rid, selectedDate]);
 
-  if (!Number.isFinite(rid) || rid <= 0 || !selectedDate) return null;
+  const needsResource = !Number.isFinite(rid) || rid <= 0;
+  const needsDate = !selectedDate;
+
+  if (needsResource || needsDate) {
+    return (
+      <div
+        className={
+          bookingsHub
+            ? "rounded-2xl border border-dashed border-[#00205B]/20 bookings-card p-5"
+            : "rounded-2xl border border-dashed border-slate-200 bg-slate-50/80 p-5"
+        }
+      >
+        <p className={`text-sm font-semibold ${bookingsHub ? "text-[#00205B]" : "text-slate-800"}`}>Time slots</p>
+        <p className={`mt-2 text-sm ${bookingsHub ? "text-slate-600" : "text-slate-600"}`}>
+          {needsResource
+            ? "Select a resource first. Then choose a date — hourly slots will appear below for that day."
+            : "Choose a booking date — available slots load as soon as the date is selected."}
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="rounded-2xl border border-slate-100 bg-slate-50 shadow-sm p-5">
+    <div
+      className={
+        bookingsHub
+          ? "rounded-2xl border shadow-sm p-5 bookings-card"
+          : "rounded-2xl border border-slate-100 bg-slate-50 shadow-sm p-5"
+      }
+    >
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm font-semibold text-slate-900">Quick Select</p>
         <p className="text-xs text-slate-500">
-          {availabilityStart}–{availabilityEnd} · 1h slots · unavailable disabled
+          {availabilityStart}–{availabilityEnd} · 1h slots · booked / past: not available
         </p>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-4 flex max-w-full flex-nowrap gap-2 overflow-x-auto overflow-y-visible pb-1 [scrollbar-gutter:stable]">
         {loading &&
           Array.from({ length: 16 }).map((_, i) => (
             <span
@@ -118,30 +150,39 @@ export default function SmartTimeSlots({
             const label = rangeLabel(s.startLocal);
             const endMs = new Date(s.endLocal).getTime();
             const past = Number.isFinite(endMs) && endMs <= Date.now();
-            const disabled = !s.available || past;
+            const unavailable = !s.available || past;
             const title = past
               ? "This time has already passed"
               : !s.available
-                ? "This time is not available (already booked)"
+                ? "Not available (already booked)"
                 : `Select ${label}`;
 
             return (
               <button
                 key={s.startLocal}
                 type="button"
-                disabled={disabled}
                 title={title}
+                tabIndex={unavailable ? -1 : 0}
+                aria-disabled={unavailable}
                 onClick={() => {
-                  if (disabled) return;
+                  if (unavailable) {
+                    toast.error(
+                      past
+                        ? "Not available — this time has already passed."
+                        : "Not available — this time slot is already booked."
+                    );
+                    return;
+                  }
                   onSelectSlot?.(s.startLocal, s.endLocal);
                 }}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all border ${
-                  disabled
-                    ? "cursor-not-allowed border-slate-200 bg-slate-100/90 text-slate-400 opacity-70"
-                    : "border-emerald-200 text-emerald-700 bg-emerald-50/80 hover:bg-emerald-100 hover:shadow-sm"
-                }`}
-                aria-label={disabled ? `${label} (not selectable)` : `Select slot ${label}`}
-                aria-disabled={disabled}
+                className={
+                  unavailable
+                    ? "cursor-not-allowed rounded-full border border-slate-200 bg-slate-100/90 px-3 py-1.5 text-xs font-semibold text-slate-400 opacity-80 transition-all"
+                    : bookingsHub
+                      ? "rounded-full border border-[#00205B]/15 bg-[#F9BF3B] px-3 py-1.5 text-xs font-semibold text-[#00205B] shadow-sm transition-all hover:brightness-105 hover:shadow"
+                      : "rounded-full border border-emerald-200 bg-emerald-50/80 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition-all hover:bg-emerald-100 hover:shadow-sm"
+                }
+                aria-label={unavailable ? `${label}, not available` : `Select slot ${label}`}
               >
                 {label}
               </button>
