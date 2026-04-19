@@ -84,14 +84,13 @@ createRoot(document.getElementById('root')).render(
         },
       }}
     >
-      <AntdApp>
-        <App />
-      </AntdApp>
+      <BrowserRouter>
+        <AntdApp>
+          <ToastProvider>
+            <App />
+          </ToastProvider>
+        </AntdApp>
+      </BrowserRouter>
     </ConfigProvider>
-    <BrowserRouter>
-      <ToastProvider>
-        <App />
-      </ToastProvider>
-    </BrowserRouter>
   </StrictMode>,
 )
