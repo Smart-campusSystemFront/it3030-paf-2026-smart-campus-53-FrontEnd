@@ -1,7 +1,9 @@
 import { Menu } from 'antd'
 import {
+  AppstoreOutlined,
   BarChartOutlined,
   CalendarOutlined,
+  FilterOutlined,
   PlusCircleOutlined,
   QrcodeOutlined,
 } from '@ant-design/icons'
@@ -46,8 +48,8 @@ export default function BookingsSectionLayout() {
           height: '100%',
           background: 'var(--bg-sidebar, #001845)',
           position: 'relative',
-          overflow: 'hidden',
-          overflowY: 'hidden',
+          overflowX: 'hidden',
+          overflowY: 'auto',
         }}
       >
         <div
@@ -131,6 +133,68 @@ export default function BookingsSectionLayout() {
             },
           ]}
         />
+
+        <div
+          style={{
+            padding: '10px 10px 12px',
+            marginTop: 4,
+            borderTop: '1px solid rgba(255,255,255,.12)',
+            flexShrink: 0,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 10,
+              fontWeight: 700,
+              color: 'rgba(201,206,220,.5)',
+              letterSpacing: '1.2px',
+              textTransform: 'uppercase',
+              marginBottom: 8,
+              paddingLeft: 6,
+            }}
+          >
+            Resources
+          </div>
+          <Menu
+            mode="inline"
+            theme="dark"
+            selectable={false}
+            style={{ background: 'transparent', border: 'none', padding: '0 4px' }}
+            items={[
+              {
+                key: 'res-browse',
+                icon: <AppstoreOutlined />,
+                label: (
+                  <Link to="/resources/browse" style={{ color: 'inherit', textDecoration: 'none', fontWeight: 500 }}>
+                    Browse &amp; edit
+                  </Link>
+                ),
+              },
+              {
+                key: 'res-filter',
+                icon: <FilterOutlined />,
+                label: (
+                  <Link
+                    to="/resources/browse#filter"
+                    style={{ color: 'inherit', textDecoration: 'none', fontWeight: 500 }}
+                  >
+                    Filter &amp; search
+                  </Link>
+                ),
+              },
+              {
+                key: 'res-add',
+                icon: <PlusCircleOutlined />,
+                label: (
+                  <Link to="/resources/add" style={{ color: 'inherit', textDecoration: 'none', fontWeight: 500 }}>
+                    Add resource
+                  </Link>
+                ),
+              },
+            ]}
+          />
+        </div>
+
         <div
           style={{
             position: 'absolute',

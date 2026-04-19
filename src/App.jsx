@@ -15,6 +15,9 @@ import BookingDashboard from './pages/BookingDashboard.jsx'
 import BookingScanner from './pages/BookingScanner.jsx'
 import AdminBookings from './pages/AdminBookings.jsx'
 import BookingsSectionLayout from './components/BookingsSectionLayout.jsx'
+import ResourcesSectionLayout from './components/ResourcesSectionLayout.jsx'
+import ResourcesBrowsePage from './pages/resources/ResourcesBrowsePage.jsx'
+import ResourcesAddPage from './pages/resources/ResourcesAddPage.jsx'
 import AdminOverview from './pages/admin/Overview.jsx'
 import AdminTickets from './pages/admin/Tickets.jsx'
 import Profile from './pages/Profile.jsx'
@@ -60,6 +63,20 @@ export default function App() {
               <Route path="new" element={<BookingForm />} />
               <Route path="scanner" element={<BookingScanner />} />
             </Route>
+
+            <Route
+              path="/resources"
+              element={
+                <ProtectedRoute>
+                  <ResourcesSectionLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Navigate to="browse" replace />} />
+              <Route path="browse" element={<ResourcesBrowsePage />} />
+              <Route path="add" element={<ResourcesAddPage />} />
+            </Route>
+
             <Route
               path="/profile"
               element={
