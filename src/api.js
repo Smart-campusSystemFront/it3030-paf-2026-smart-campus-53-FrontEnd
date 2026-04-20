@@ -1,3 +1,5 @@
+import { getToken } from './lib/storage.js'
+
 let authToken = null
 let authUser = null
 
@@ -11,8 +13,9 @@ export function clearSession() {
   authUser = null
 }
 
+/** Token prefers in-memory LoginBar session, then JWT from AuthContext/localStorage. */
 export function getSession() {
-  return { token: authToken, user: authUser }
+  return { token: authToken || getToken() || null, user: authUser }
 }
 
 async function request(path, options = {}) {
@@ -20,17 +23,25 @@ async function request(path, options = {}) {
   if (options.body && !(options.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json')
   }
-  if (authToken) {
-    headers.set('Authorization', `Bearer ${authToken}`)
+  const bearer = authToken || getToken()
+  if (bearer) {
+    headers.set('Authorization', `Bearer ${bearer}`)
   }
   const res = await fetch(path, { ...options, headers })
   if (res.status === 204) {
     return null
   }
   const text = await res.text()
-  const data = text ? JSON.parse(text) : null
+  let data = null
+  if (text) {
+    try {
+      data = JSON.parse(text)
+    } catch {
+      data = { message: text.slice(0, 300) }
+    }
+  }
   if (!res.ok) {
-    const msg = data?.error || res.statusText
+    const msg = data?.message || data?.error || res.statusText
     throw new Error(msg)
   }
   return data
@@ -61,6 +72,10 @@ export async function listMyTickets() {
 
 export async function getTicket(id) {
   return request(`/api/tickets/${id}`)
+}
+
+export async function deleteTicket(id) {
+  return request(`/api/tickets/${id}`, { method: 'DELETE' })
 }
 
 export async function updateTicketStatus(id, status) {

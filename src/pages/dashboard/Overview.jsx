@@ -173,7 +173,7 @@ export default function UserDashboardOverview() {
           ))}
           {['ADMIN', 'TECHNICIAN'].includes(user.role) && (
             <Link
-              to="/admin/overview"
+              to="/admin/tickets"
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6,
                 borderRadius: 'var(--radius-sm)', padding: '8px 16px',
@@ -186,7 +186,7 @@ export default function UserDashboardOverview() {
               onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)' }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
             >
-              {user.role === 'ADMIN' ? 'Admin Dashboard' : 'Tech Dashboard'}
+              Admin Dashboard
             </Link>
           )}
         </div>

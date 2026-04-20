@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getSession, listMyTickets, listTickets } from '../../api.js'
+import { listMyTickets, listTickets } from '../../api.js'
+import { useAuth } from '../../context/AuthContext.jsx'
 import { useToast } from '../../context/ToastContext.jsx'
 
 function statusClass(status) {
@@ -64,14 +65,14 @@ function staffRole(role) {
  */
 export function TicketList({ refreshToken = 0 }) {
   const { push } = useToast()
+  const { user, loading: authLoading } = useAuth()
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
-  const [showReporter, setShowReporter] = useState(() => staffRole(getSession().user?.role))
+  const [showReporter, setShowReporter] = useState(() => staffRole(user?.role))
 
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const { user } = getSession()
       const isStaff = staffRole(user?.role)
       setShowReporter(isStaff)
       const data = isStaff ? await listTickets() : await listMyTickets()
@@ -82,11 +83,14 @@ export function TicketList({ refreshToken = 0 }) {
     } finally {
       setLoading(false)
     }
-  }, [push])
+  }, [push, user?.role])
 
   useEffect(() => {
+    if (authLoading) {
+      return
+    }
     load()
-  }, [load, refreshToken])
+  }, [load, refreshToken, authLoading])
 
   if (loading) {
     return (

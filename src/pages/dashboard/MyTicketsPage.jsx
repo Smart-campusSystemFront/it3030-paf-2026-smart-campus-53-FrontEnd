@@ -1,14 +1,15 @@
 import React from 'react'
-import { getSession } from '../../api.js'
 import { CreateTicketLink } from '../../components/tickets/CreateTicketLink.jsx'
 import { TicketList } from '../../components/tickets/TicketList.jsx'
+import { useAuth } from '../../context/AuthContext.jsx'
 
 function isStaffRole(role) {
   return role === 'ADMIN' || role === 'TECHNICIAN'
 }
 
 export default function MyTicketsPage() {
-  const staff = isStaffRole(getSession().user?.role)
+  const { user } = useAuth()
+  const staff = isStaffRole(user?.role)
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">

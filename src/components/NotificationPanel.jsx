@@ -1,16 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { getSession, listNotifications } from '../api.js'
+import { listNotifications } from '../api.js'
+import { useAuth } from '../context/AuthContext.jsx'
 import { useToast } from '../context/ToastContext.jsx'
 
 export function NotificationPanel() {
   const { push } = useToast()
-  const session = getSession()
+  const { token } = useAuth()
   const [items, setItems] = useState([])
   const seen = useRef(new Set())
   const initialPoll = useRef(true)
 
   useEffect(() => {
-    if (!session.token) {
+    if (!token) {
       setItems([])
       seen.current = new Set()
       initialPoll.current = true
@@ -43,9 +44,9 @@ export function NotificationPanel() {
       cancelled = true
       clearInterval(id)
     }
-  }, [session.token, push])
+  }, [token, push])
 
-  if (!session.token) {
+  if (!token) {
     return null
   }
 
