@@ -54,6 +54,11 @@ export async function listTickets() {
   return request('/api/tickets')
 }
 
+/** Tickets submitted by the signed-in user (see GET /api/tickets/me). */
+export async function listMyTickets() {
+  return request('/api/tickets/me')
+}
+
 export async function getTicket(id) {
   return request(`/api/tickets/${id}`)
 }

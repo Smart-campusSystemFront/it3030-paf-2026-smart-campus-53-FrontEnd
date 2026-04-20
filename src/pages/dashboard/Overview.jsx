@@ -1,5 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faIdBadge, faShieldHalved, faUserCheck, faCalendarCheck, faTicket, faBell } from '@fortawesome/free-solid-svg-icons'
+import { Fragment } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext.jsx'
 
@@ -56,6 +57,7 @@ const FEATURE_CARDS = [
     description: 'Submit facility requests, IT issues, or maintenance reports. Track status in real time.',
     badge: 'In Progress',
     badgeColor: '#F9BF3B',
+    to: '/dashboard/tickets',
   },
   {
     icon: faBell,
@@ -196,15 +198,16 @@ export default function UserDashboardOverview() {
           Available Features
         </h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 16 }}>
-          {FEATURE_CARDS.map(({ icon, color, bg, title, description, badge, badgeColor }) => (
+          {FEATURE_CARDS.map(({ icon, color, bg, title, description, badge, badgeColor, to }) => {
+            const cardStyle = {
+              background: '#fff', borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)',
+              padding: '20px', overflow: 'hidden', position: 'relative',
+              transition: 'box-shadow var(--duration) var(--ease), transform var(--duration) var(--ease)',
+            }
+            const inner = (
             <div
-              key={title}
-              style={{
-                background: '#fff', borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)',
-                padding: '20px', overflow: 'hidden', position: 'relative',
-                transition: 'box-shadow var(--duration) var(--ease), transform var(--duration) var(--ease)',
-              }}
+              style={cardStyle}
               onMouseEnter={(e) => { e.currentTarget.style.boxShadow = 'var(--shadow-md)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
               onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; e.currentTarget.style.transform = 'translateY(0)' }}
             >
@@ -229,7 +232,20 @@ export default function UserDashboardOverview() {
                 {description}
               </p>
             </div>
-          ))}
+            )
+            if (to) {
+              return (
+                <Link
+                  key={title}
+                  to={to}
+                  style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
+                >
+                  {inner}
+                </Link>
+              )
+            }
+            return <Fragment key={title}>{inner}</Fragment>
+          })}
         </div>
       </div>
     </div>

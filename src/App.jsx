@@ -8,7 +8,9 @@ import Login from './pages/Login.jsx'
 import Register from './pages/Register.jsx'
 import OAuthCallback from './pages/OAuthCallback.jsx'
 import UserDashboardOverview from './pages/dashboard/Overview.jsx'
-import UserTickets from './pages/dashboard/Tickets.jsx'
+import MyTicketsPage from './pages/dashboard/MyTicketsPage.jsx'
+import CreateTicketPage from './pages/dashboard/CreateTicketPage.jsx'
+import { TicketDetail } from './components/TicketDetail.jsx'
 import AdminOverview from './pages/admin/Overview.jsx'
 import AdminTickets from './pages/admin/Tickets.jsx'
 import Profile from './pages/Profile.jsx'
@@ -34,7 +36,9 @@ export default function App() {
               }
             >
               <Route index element={<UserDashboardOverview />} />
-              <Route path="tickets" element={<UserTickets />} />
+              <Route path="tickets" element={<MyTicketsPage />} />
+              <Route path="tickets/new" element={<CreateTicketPage />} />
+              <Route path="tickets/:id" element={<TicketDetail />} />
             </Route>
             <Route
               path="/profile"

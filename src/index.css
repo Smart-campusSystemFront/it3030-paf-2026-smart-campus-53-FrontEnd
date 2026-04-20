@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 /* Global base — aligned with brand palette (Deep Navy canvas, Silver type, Azure links) */
 :root {
   --navy: #00205b;

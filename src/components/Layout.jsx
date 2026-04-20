@@ -190,7 +190,14 @@ export default function Layout() {
   const shellWide = pathname.startsWith('/dashboard') || pathname.startsWith('/admin')
 
   return (
-    <div style={{ minHeight: '100%', background: 'var(--bg-page)', color: 'var(--text-primary)' }}>
+    <div
+      className={shellWide ? 'min-h-full bg-slate-100 text-slate-900' : 'min-h-full'}
+      style={
+        shellWide
+          ? undefined
+          : { minHeight: '100%', background: 'var(--bg-page)', color: 'var(--text-primary)' }
+      }
+    >
 
       {/* ── Top Navigation Bar ── */}
       <header
