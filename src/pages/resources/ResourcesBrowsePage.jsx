@@ -52,6 +52,15 @@ export default function ResourcesBrowsePage() {
     }
   }, [hash])
 
+  /** After Edit is clicked, scroll only the update form into view (not the whole page to y=0). */
+  useEffect(() => {
+    if (editingId == null) return
+    document.getElementById('resource-edit-form')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+    })
+  }, [editingId])
+
   async function onSubmit(e) {
     e.preventDefault()
     if (!editingId) return
@@ -89,7 +98,6 @@ export default function ResourcesBrowsePage() {
       availability: r.availability ?? '',
       status: r.status ?? 'ACTIVE',
     })
-    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   async function onDelete(id) {
@@ -142,7 +150,11 @@ export default function ResourcesBrowsePage() {
       ) : null}
 
       {editingId ? (
-        <section className="card">
+        <section
+          id="resource-edit-form"
+          className="card"
+          style={{ scrollMarginTop: '88px' }}
+        >
           <h2>Edit resource #{editingId}</h2>
           <form className="form" onSubmit={onSubmit}>
             <ResourceFormFields
