@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Table, Button, Modal, Form, Input, Select, Tag, Tooltip, Popconfirm, Badge, message } from 'antd'
 import {
   BellOutlined, SendOutlined, EditOutlined, DeleteOutlined,
-  UserOutlined, TeamOutlined, CheckCircleOutlined,
+  UserOutlined, TeamOutlined, CheckCircleOutlined, PlayCircleOutlined
 } from '@ant-design/icons'
 import { apiRequest } from '../../lib/api.js'
 
@@ -70,6 +70,50 @@ export default function AdminNotifications() {
       load()
     } catch {
       message.error('Delete failed')
+    }
+  }
+
+  const handleGenerateDemoData = async () => {
+    setLoading(true)
+    message.loading({ content: 'Generating scenario notifications...', key: 'demo' })
+    try {
+      const demoScenarios = [
+        {
+          type: 'INFO',
+          message: 'Booking Update: Your reservation for Lecture Hall 1 has been APPROVED.',
+          userEmail: '', // broadcast
+        },
+        {
+          type: 'WARNING',
+          message: 'Ticket Status: Maintenance ticket #TCK-209 has been marked as PENDING from IN_PROGRESS.',
+          userEmail: '', // broadcast
+        },
+        {
+          type: 'INFO',
+          message: 'New Comment: Technician replied: "Replacing the network switch now, should be up shortly."',
+          userEmail: '', // broadcast
+        },
+        {
+          type: 'ALERT',
+          message: 'System Broadcast: Server maintenance starts in 10 minutes. Please save your work.',
+          userEmail: '', // broadcast
+        }
+      ]
+
+      for (const req of demoScenarios) {
+        await apiRequest('/api/notifications/admin/send', {
+          method: 'POST', body: req,
+        })
+        // 400ms delay to give a cascading real-time feel to connected UI
+        await new Promise(res => setTimeout(res, 400))
+      }
+      
+      message.success({ content: 'Demo notifications launched successfully!', key: 'demo' })
+      load()
+    } catch {
+      message.error({ content: 'Failed to deploy demo data', key: 'demo' })
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -142,14 +186,23 @@ export default function AdminNotifications() {
             Send, edit, or delete in-app notifications. Broadcasts reach all users instantly.
           </p>
         </div>
-        <Button
-          type="primary"
-          icon={<SendOutlined />}
-          onClick={openSend}
-          style={{ borderRadius: 8, fontWeight: 600 }}
-        >
-          Send Notification
-        </Button>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <Button
+            icon={<PlayCircleOutlined />}
+            onClick={handleGenerateDemoData}
+            style={{ borderRadius: 8, fontWeight: 600, background: '#f8fafc', borderColor: 'var(--border)' }}
+          >
+            Auto Demo (All)
+          </Button>
+          <Button
+            type="primary"
+            icon={<SendOutlined />}
+            onClick={openSend}
+            style={{ borderRadius: 8, fontWeight: 600 }}
+          >
+            Send Notification
+          </Button>
+        </div>
       </div>
 
       {/* ── Stats strip ── */}
@@ -205,7 +258,20 @@ export default function AdminNotifications() {
         width={520}
         destroyOnClose
       >
-        <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
+        {!editRecord && (
+          <div style={{ marginBottom: 16, background: '#f8fafc', padding: 12, borderRadius: 8, border: '1px dashed var(--border)' }}>
+            <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 8, fontWeight: 500 }}>
+              Quick Fill Demo Scenarios:
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <Button size="small" onClick={() => form.setFieldsValue({ type: 'INFO', message: 'Booking Update: Your reservation for Lecture Hall 1 has been APPROVED.', userEmail: '' })}>Booking</Button>
+              <Button size="small" onClick={() => form.setFieldsValue({ type: 'WARNING', message: 'Ticket Status: Maintenance ticket #TCK-209 has been marked as PENDING from IN_PROGRESS.', userEmail: '' })}>Ticket</Button>
+              <Button size="small" onClick={() => form.setFieldsValue({ type: 'INFO', message: 'New Comment: Technician replied: "Replacing the network switch now, should be up shortly."', userEmail: '' })}>Comment</Button>
+              <Button size="small" onClick={() => form.setFieldsValue({ type: 'ALERT', message: 'System Broadcast: Server maintenance starts in 10 minutes. Please save your work.', userEmail: '' })}>Alert</Button>
+            </div>
+          </div>
+        )}
+        <Form form={form} layout="vertical" style={{ marginTop: editRecord ? 16 : 0 }}>
           <Form.Item
             name="type"
             label="Type"
