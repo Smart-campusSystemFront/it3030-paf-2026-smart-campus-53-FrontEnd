@@ -1,121 +1,53 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import React, { useCallback, useState } from 'react'
+import { Link, Navigate, Route, Routes } from 'react-router-dom'
 import './App.css'
+import { IncidentForm } from './components/IncidentForm.jsx'
+import { LoginBar } from './components/LoginBar.jsx'
+import { NotificationPanel } from './components/NotificationPanel.jsx'
+import { TicketDetail } from './components/TicketDetail.jsx'
+import { TicketList } from './components/TicketList.jsx'
+import { getSession } from './api.js'
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+function PrivateRoute({ children }) {
+  const session = getSession()
+  if (!session.token) {
+    return <Navigate to="/" replace />
+  }
+  return children
 }
 
-export default App
+export default function App() {
+  const [, bump] = useState(0)
+  const refresh = useCallback(() => bump((n) => n + 1), [])
+
+  return (
+    <div className="layout">
+      <header className="topbar">
+        <div className="brand">
+          <Link to="/">Smart Campus</Link>
+          <span className="muted small">Incident desk</span>
+        </div>
+        <nav className="nav">
+          <Link to="/">New ticket</Link>
+          <Link to="/tickets">All tickets</Link>
+        </nav>
+        <LoginBar onAuthChange={refresh} />
+      </header>
+      <main className="main">
+        <Routes>
+          <Route path="/" element={<IncidentForm />} />
+          <Route
+            path="/tickets"
+            element={
+              <PrivateRoute>
+                <TicketList />
+              </PrivateRoute>
+            }
+          />
+          <Route path="/tickets/:id" element={<TicketDetail />} />
+        </Routes>
+      </main>
+      <NotificationPanel />
+    </div>
+  )
+}
