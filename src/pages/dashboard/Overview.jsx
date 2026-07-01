@@ -12,7 +12,7 @@ const STAT_CARDS = [
     bg: 'var(--c-blue-light)',
     label: 'Account',
     getValue: (user) => `${user.firstName} ${user.lastName}`,
-    getSub:   (user) => user.email,
+    getSub: (user) => user.email,
   },
   {
     key: 'role',
@@ -21,7 +21,7 @@ const STAT_CARDS = [
     bg: '#fffbeb',
     label: 'Role',
     getValue: (user) => user.role,
-    getSub:   (user) => `Provider: ${user.provider || 'LOCAL'}`,
+    getSub: (user) => `Provider: ${user.provider || 'LOCAL'}`,
   },
   {
     key: 'status',
@@ -30,7 +30,7 @@ const STAT_CARDS = [
     bg: '#f0fdf4',
     label: 'Status',
     getValue: (user) => user.active ? 'Active' : 'Disabled',
-    getSub:   (user) => `ID: ${user.id}`,
+    getSub: (user) => `ID: ${user.id}`,
   },
 ]
 
@@ -205,6 +205,22 @@ export default function UserDashboardOverview() {
               >
                 {user.role === 'ADMIN' ? 'Admin Dashboard' : 'Tech Dashboard'}
               </Link>
+            <Link
+              to="/admin/tickets"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                borderRadius: 'var(--radius-sm)', padding: '8px 16px',
+                fontSize: 13, fontWeight: 600, textDecoration: 'none',
+                background: 'linear-gradient(135deg,var(--c-amber),#f59e0b)',
+                color: 'var(--c-navy)', border: 'none',
+                boxShadow: '0 4px 10px rgb(249 191 59/.25)',
+                transition: 'all var(--duration) var(--ease)',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)' }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)' }}
+            >
+              Admin Dashboard
+            </Link>
             </>
           )}
         </div>
@@ -224,32 +240,32 @@ export default function UserDashboardOverview() {
               transition: 'box-shadow var(--duration) var(--ease), transform var(--duration) var(--ease)',
             }
             const inner = (
-            <div
-              style={cardStyle}
-              onMouseEnter={(e) => { e.currentTarget.style.boxShadow = 'var(--shadow-md)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
-              onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; e.currentTarget.style.transform = 'translateY(0)' }}
-            >
-              {/* Badge */}
-              <span style={{
-                position: 'absolute', top: 14, right: 14,
-                fontSize: 10, fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase',
-                background: `${badgeColor}15`, color: badgeColor,
-                border: `1px solid ${badgeColor}40`,
-                borderRadius: 6, padding: '2px 8px',
-              }}>
-                {badge}
-              </span>
+              <div
+                style={cardStyle}
+                onMouseEnter={(e) => { e.currentTarget.style.boxShadow = 'var(--shadow-md)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; e.currentTarget.style.transform = 'translateY(0)' }}
+              >
+                {/* Badge */}
+                <span style={{
+                  position: 'absolute', top: 14, right: 14,
+                  fontSize: 10, fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase',
+                  background: `${badgeColor}15`, color: badgeColor,
+                  border: `1px solid ${badgeColor}40`,
+                  borderRadius: 6, padding: '2px 8px',
+                }}>
+                  {badge}
+                </span>
 
-              <div style={{ width: 40, height: 40, borderRadius: 12, background: bg, display: 'grid', placeItems: 'center', marginBottom: 14 }}>
-                <FontAwesomeIcon icon={icon} style={{ color, fontSize: 18 }} />
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: bg, display: 'grid', placeItems: 'center', marginBottom: 14 }}>
+                  <FontAwesomeIcon icon={icon} style={{ color, fontSize: 18 }} />
+                </div>
+                <h4 style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 700, color: 'var(--c-navy)', fontFamily: "'Plus Jakarta Sans',sans-serif" }}>
+                  {title}
+                </h4>
+                <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                  {description}
+                </p>
               </div>
-              <h4 style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 700, color: 'var(--c-navy)', fontFamily: "'Plus Jakarta Sans',sans-serif" }}>
-                {title}
-              </h4>
-              <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                {description}
-              </p>
-            </div>
             )
             if (to) {
               return (

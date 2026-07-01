@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { clearSession as clearLegacyApiSession } from '../api.js'
 import { apiRequest } from '../lib/api.js'
 import { getToken, setToken } from '../lib/storage.js'
 
@@ -78,6 +79,7 @@ export function AuthProvider({ children }) {
     setToken(null)
     setTokenState(null)
     setUser(null)
+    clearLegacyApiSession()
   }, [])
 
   const value = useMemo(

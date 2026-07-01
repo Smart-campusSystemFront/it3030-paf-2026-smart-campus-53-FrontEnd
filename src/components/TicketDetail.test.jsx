@@ -2,10 +2,15 @@ import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import * as api from '../api.js'
+import { useAuth } from '../context/AuthContext.jsx'
 import { ToastProvider } from '../context/ToastContext.jsx'
 import { TicketDetail } from './TicketDetail.jsx'
+
+vi.mock('../context/AuthContext.jsx', () => ({
+  useAuth: vi.fn(),
+}))
 
 vi.mock('../api.js', async () => {
   const actual = await vi.importActual('../api.js')
@@ -48,11 +53,11 @@ describe('TicketDetail', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     api.getTicket.mockResolvedValue(sampleTicket)
-    api.setSession('token', { username: 'student1', role: 'USER', id: 7 })
-  })
-
-  afterEach(() => {
-    api.clearSession()
+    useAuth.mockReturnValue({
+      user: { id: 7, role: 'USER', username: 'student1' },
+      token: 'token',
+      loading: false,
+    })
   })
 
   it('posts a comment when signed in', async () => {

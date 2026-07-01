@@ -1,15 +1,16 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   addComment,
   assignTechnician,
   deleteComment,
-  getSession,
+  deleteTicket,
   getTicket,
   listTechnicians,
   updateComment,
   updateTicketStatus,
 } from '../api.js'
+import { useAuth } from '../context/AuthContext.jsx'
 import { useToast } from '../context/ToastContext.jsx'
 
 const STATUSES = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED', 'REJECTED']
@@ -28,8 +29,9 @@ function statusBadgeClass(status) {
 
 export function TicketDetail() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const { push } = useToast()
-  const session = getSession()
+  const { user, token } = useAuth()
   const [ticket, setTicket] = useState(null)
   const [technicians, setTechnicians] = useState([])
   const [status, setStatus] = useState('')
@@ -38,9 +40,30 @@ export function TicketDetail() {
   const [editing, setEditing] = useState(null)
   const [editText, setEditText] = useState('')
 
-  const role = session.user?.role
+  const role = user?.role
   const canStaff = role === 'ADMIN' || role === 'TECHNICIAN'
   const isAdmin = role === 'ADMIN'
+
+  const canDeleteTicket = useMemo(() => {
+    if (!ticket || !user) {
+      return false
+    }
+    if (role === 'ADMIN') {
+      return true
+    }
+    if (String(ticket.status || '').toUpperCase() !== 'OPEN') {
+      return false
+    }
+    if (ticket.submitter?.id != null && ticket.submitter.id === user.id) {
+      return true
+    }
+    const u = String(user.email || '').trim().toLowerCase()
+    const c = String(ticket.contactEmail || '').trim().toLowerCase()
+    if (!ticket.submitter && u && c && u === c) {
+      return true
+    }
+    return false
+  }, [ticket, user, role])
 
   const load = useMemo(
     () => async () => {
@@ -131,6 +154,25 @@ export function TicketDetail() {
     }
   }
 
+  async function onDeleteTicket() {
+    if (
+      !window.confirm(
+        role === 'ADMIN'
+          ? 'Delete this ticket permanently? This cannot be undone.'
+          : 'Delete this open ticket? This cannot be undone.',
+      )
+    ) {
+      return
+    }
+    try {
+      await deleteTicket(id)
+      push('Ticket deleted')
+      navigate('/dashboard/tickets', { replace: true })
+    } catch (err) {
+      push(err.message || 'Could not delete ticket')
+    }
+  }
+
   if (!ticket) {
     return <p className="text-sm text-slate-500">Loading…</p>
   }
@@ -146,14 +188,25 @@ export function TicketDetail() {
             ← Maintenance &amp; Incident Ticketing
           </Link>
         </p>
-        <h1 className="font-['Plus_Jakarta_Sans',system-ui,sans-serif] text-2xl font-bold tracking-tight text-slate-900">
-          Ticket #{ticket.id}{' '}
-          <span
-            className={`ml-2 inline-flex align-middle text-sm font-semibold uppercase tracking-wide ${statusBadgeClass(ticket.status)} rounded-md px-2.5 py-0.5`}
-          >
-            {ticket.status}
-          </span>
-        </h1>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <h1 className="font-['Plus_Jakarta_Sans',system-ui,sans-serif] text-2xl font-bold tracking-tight text-slate-900">
+            Ticket #{ticket.id}{' '}
+            <span
+              className={`ml-2 inline-flex align-middle text-sm font-semibold uppercase tracking-wide ${statusBadgeClass(ticket.status)} rounded-md px-2.5 py-0.5`}
+            >
+              {ticket.status}
+            </span>
+          </h1>
+          {canDeleteTicket && (
+            <button
+              type="button"
+              onClick={onDeleteTicket}
+              className="inline-flex h-10 shrink-0 items-center justify-center rounded-lg border border-rose-200 bg-rose-50 px-4 text-sm font-semibold text-rose-800 shadow-sm transition hover:bg-rose-100"
+            >
+              Delete ticket
+            </button>
+          )}
+        </div>
         <dl className="kv">
           <div>
             <dt>Category</dt>
@@ -233,7 +286,7 @@ export function TicketDetail() {
       </section>
       <section className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm md:p-8">
         <h2 className="font-['Plus_Jakarta_Sans',system-ui,sans-serif] text-lg font-bold text-slate-900">Comments</h2>
-        {session.token ? (
+        {token ? (
           <form className="form inline" onSubmit={onAddComment}>
             <textarea
               rows={3}
@@ -249,7 +302,7 @@ export function TicketDetail() {
         )}
         <ul className="comments">
           {ticket.comments?.map((c) => {
-            const mine = session.user && c.authorId === session.user.id
+            const mine = user && c.authorId === user.id
             const canModify = mine || role === 'ADMIN'
             return (
               <li key={c.id} className="comment">

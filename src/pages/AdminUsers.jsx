@@ -238,7 +238,7 @@ export default function AdminUsers() {
   )
 
   return (
-    <Space direction="vertical" size="large" style={{ width: '100%' }}>
+    <Space orientation="vertical" size="large" style={{ width: '100%' }}>
       <Breadcrumb
         items={[
           { title: <Link to="/admin/overview">Admin</Link> },
