@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 import { apiRequest } from '../lib/api.js';
 import { getToken } from '../lib/storage.js';
 import { useAuth } from './AuthContext.jsx';
+import { API_BASE_URL } from '../lib/config.js';
 
 const NotificationContext = createContext(null);
 
@@ -32,7 +33,8 @@ export function NotificationProvider({ children }) {
     const token = getToken();
     if (!token) return;
 
-    const url = `http://localhost:8080/api/notifications/subscribe?access_token=${token}`;
+    const base = API_BASE_URL.replace(/\/+$/, '');
+    const url = `${base}/api/notifications/subscribe?access_token=${token}`;
     const es = new EventSource(url);
 
     es.onmessage = (event) => {
