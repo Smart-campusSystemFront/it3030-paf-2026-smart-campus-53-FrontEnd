@@ -15,9 +15,9 @@
 pipeline {
     agent any
 
-    tools {
-        nodejs 'NodeJS-22'
-    }
+    // tools {
+    //     nodejs 'NodeJS-22'
+    // }
 
     environment {
         S3_BUCKET       = 'smart-campus-frontend'  // Change to your bucket name
