@@ -20,7 +20,7 @@ pipeline {
     // }
 
     environment {
-        S3_BUCKET       = 'smart-campus-frontend'  // Change to your bucket name
+        S3_BUCKET       = 'smart-campus-frontend-chanuka'  // Change to your bucket name
         CLOUDFRONT_DIST = credentials('cloudfront-distribution-id')
         AWS_REGION      = 'ap-south-1'
     }
