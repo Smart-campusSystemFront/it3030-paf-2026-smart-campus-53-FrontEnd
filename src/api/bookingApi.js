@@ -1,34 +1,11 @@
 import axios from "axios";
 import { getToken } from "../lib/storage.js";
-
-/**
- * Spring serves REST under `/api`.
- * - Default `/api` → same origin as Vite (localhost:5173), so requests go through vite.config.js
- *   proxy to :8080 — no CORS issues when backend + frontend run together in dev.
- * - `http://localhost:8080` → normalized to `.../api` (direct to Spring; needs CORS allowlist).
- */
-function normalizeBookingApiBase(raw) {
-  if (raw == null || String(raw).trim() === "") {
-    return "/api";
-  }
-  const s = String(raw).trim();
-  if (s.startsWith("/")) {
-    const t = s.replace(/\/$/, "");
-    return t === "" ? "/api" : t;
-  }
-  const trimmed = s.replace(/\/$/, "");
-  if (/^https?:\/\//i.test(trimmed)) {
-    if (trimmed.toLowerCase().endsWith("/api")) return trimmed;
-    return `${trimmed}/api`;
-  }
-  return "/api";
-}
-
-const API_BASE = normalizeBookingApiBase(import.meta.env.VITE_API_BASE_URL);
+import { API_BASE_URL } from "../lib/config.js";
 
 const api = axios.create({
-  baseURL: API_BASE,
+  baseURL: API_BASE_URL,
   headers: { "Content-Type": "application/json" },
+  withCredentials: true,
 });
 
 api.interceptors.request.use(

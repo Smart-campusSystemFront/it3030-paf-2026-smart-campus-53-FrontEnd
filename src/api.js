@@ -1,4 +1,5 @@
 import { getToken } from './lib/storage.js'
+import { API_BASE_URL } from './lib/config.js'
 
 let authToken = null
 let authUser = null
@@ -27,7 +28,15 @@ async function request(path, options = {}) {
   if (bearer) {
     headers.set('Authorization', `Bearer ${bearer}`)
   }
-  const res = await fetch(path, { ...options, headers })
+  const normalizedPath =
+    API_BASE_URL.toLowerCase().endsWith('/api') && path.startsWith('/api/')
+      ? path.slice(4)
+      : path
+  const url =
+    API_BASE_URL.endsWith('/') && normalizedPath.startsWith('/')
+      ? `${API_BASE_URL}${normalizedPath.slice(1)}`
+      : `${API_BASE_URL}${normalizedPath}`
+  const res = await fetch(url, { ...options, headers, credentials: 'include' })
   if (res.status === 204) {
     return null
   }

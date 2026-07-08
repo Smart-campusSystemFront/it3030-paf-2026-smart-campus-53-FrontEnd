@@ -2,18 +2,10 @@
  * In dev, use same-origin `/api` so Vite's proxy (see vite.config.js) forwards to Spring Boot.
  * Override with VITE_API_BASE_URL when the API is on another host (e.g. deployed backend).
  */
-const DEFAULT_BASE_URL = ''
-
-function getBaseUrl() {
-  const fromEnv = import.meta.env.VITE_API_BASE_URL
-  if (fromEnv !== undefined && fromEnv !== null && String(fromEnv).trim() !== '') {
-    return String(fromEnv).replace(/\/$/, '')
-  }
-  return DEFAULT_BASE_URL
-}
+import { API_BASE_URL } from '../lib/config.js'
 
 async function request(path, options = {}) {
-  const url = `${getBaseUrl()}${path}`
+  const url = `${API_BASE_URL}${path}`
   let res
   try {
     res = await fetch(url, {
@@ -24,7 +16,7 @@ async function request(path, options = {}) {
       },
     })
   } catch (e) {
-    const isDevProxy = !getBaseUrl()
+    const isDevProxy = API_BASE_URL === '/api'
     const hint = isDevProxy
       ? ' Start the Spring Boot backend on http://127.0.0.1:8080, then refresh. In dev, Vite proxies /api to that address.'
       : ' Check VITE_API_BASE_URL and that the API server is running.'
@@ -42,7 +34,7 @@ async function request(path, options = {}) {
   const body = isJson ? await res.json().catch(() => null) : await res.text()
 
   if (!res.ok) {
-    const devProxy = !getBaseUrl()
+    const devProxy = API_BASE_URL === '/api'
     if (
       devProxy &&
       (res.status === 502 || res.status === 503 || res.status === 504)
