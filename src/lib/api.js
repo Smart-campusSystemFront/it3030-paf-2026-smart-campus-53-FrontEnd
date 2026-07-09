@@ -29,7 +29,11 @@ function shouldAttachAuth(path) {
 export async function apiRequest(path, { method, body, headers } = {}) {
   const token = getToken()
   const attachAuth = shouldAttachAuth(path)
-  const res = await fetch(joinUrl(API_BASE_URL, path), {
+  const normalizedPath =
+    API_BASE_URL.toLowerCase().endsWith('/api') && path.startsWith('/api/')
+      ? path.slice(4)
+      : path
+  const res = await fetch(joinUrl(API_BASE_URL, normalizedPath), {
     method: method || (body ? 'POST' : 'GET'),
     headers: {
       ...(body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
